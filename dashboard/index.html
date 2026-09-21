@@ -898,7 +898,7 @@ async function onAttFile(file){
 }
 /* Shared data files in the repository, next to this page (dashboard/data/).
    Until the privacy approval (SPEC, question 2) these are the fictional sample files.
-   After approval: change to 'data/employees.csv' and 'data/attendance.csv' and remove them from .gitignore.
+   After approval: change to 'data/employees.csv' and 'data/attendance.csv'.
    Only over http(s); when opened as a local file or inside Claude, the built-in sample stays. */
 const SHARED={employees:'data/sample-employees.csv',attendance:'data/sample-attendance.csv'};
 async function tryShared(){

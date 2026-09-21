@@ -1,11 +1,3 @@
-# נתוני עובדים אמיתיים לא עולים לגיט. רק קבצי דוגמה ששמם מתחיל ב-sample-
-*.xlsx
-*.xls
-*.csv
-!sample-*.xlsx
-!sample-*.xls
-!sample-*.csv
-
 # קבצי מערכת ועבודה מקומית
 .claude/
 Thumbs.db
