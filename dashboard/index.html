@@ -853,10 +853,11 @@ function loadData(rows,tasks,att,src,attSrc){
   state.emps=rows;state.tasks=tasks;state.att=att;state.src=src;state.attSrc=attSrc;state.depts=null;
   prep();recomputeChecks();fillDepts();
 }
+const SAMPLE_NOTE='<span>מוצגים <b>נתוני דוגמה</b>: כל השמות והמספרים מומצאים. כדי לראות נתונים אמיתיים, טעני קובץ עובדים וקובץ נוכחות.</span>';
 function useSample(){
   const s=makeSample(),smp={kind:'sample',name:'נתוני דוגמה',updated:TODAY};
   loadData(s.rows,s.tasks,s.att,smp,smp);
-  setNote('<span>מוצגים <b>נתוני דוגמה</b>: כל השמות והמספרים מומצאים. כדי לראות נתונים אמיתיים, טעני קובץ עובדים וקובץ נוכחות.</span>');
+  setNote(SAMPLE_NOTE);
 }
 async function onEmpFile(file){
   if(!file)return;
@@ -895,23 +896,29 @@ async function onAttFile(file){
     renderAll();
   }catch(e){setNote('<span>'+esc(e.message||'לא הצלחנו לקרוא את קובץ הנוכחות.')+'</span>','warn')}
 }
-/* shared files from the repository: only over http, otherwise the sample stays */
+/* Shared data files in the repository, next to this page (dashboard/data/).
+   Until the privacy approval (SPEC, question 2) these are the fictional sample files.
+   After approval: change to 'data/employees.csv' and 'data/attendance.csv' and remove them from .gitignore.
+   Only over http(s); when opened as a local file or inside Claude, the built-in sample stays. */
+const SHARED={employees:'data/sample-employees.csv',attendance:'data/sample-attendance.csv'};
 async function tryShared(){
   if(!/^https?:$/.test(location.protocol))return;
   try{
-    const r=await fetch('data/employees.csv',{cache:'no-store'});
+    const isSample=/(^|\/)sample-/.test(SHARED.employees),kind=isSample?'sample':'shared',name=isSample?'נתוני דוגמה':'קובץ משותף ב־GitHub';
+    const r=await fetch(SHARED.employees,{cache:'no-store'});
     if(!r.ok)return;
-    const lm=r.headers.get('Last-Modified'),res=parseEmployees(parseCSV(await r.text()));
+    const when=resp=>{const lm=resp.headers.get('Last-Modified');return lm?dayOfMs(new Date(lm).getTime()):TODAY};
+    const res=parseEmployees(parseCSV(await r.text()));
     let att=null,attSrc=null;
     try{
-      const a=await fetch('data/attendance.csv',{cache:'no-store'});
-      if(a.ok){const alm=a.headers.get('Last-Modified');att=parseAttendance(parseCSV(await a.text())).att;attSrc={kind:'shared',name:'קובץ משותף ב־GitHub',updated:alm?dayOfMs(new Date(alm).getTime()):TODAY}}
+      const a=await fetch(SHARED.attendance,{cache:'no-store'});
+      if(a.ok){att=parseAttendance(parseCSV(await a.text())).att;attSrc={kind,name,updated:when(a)}}
     }catch(e){}
-    loadData(res.rows,res.tasks,att,{kind:'shared',name:'קובץ משותף ב־GitHub',updated:lm?dayOfMs(new Date(lm).getTime()):TODAY},attSrc);
+    loadData(res.rows,res.tasks,att,{kind,name,updated:when(r)},attSrc);
     let rg=presetRange('month');state.preset='month';state.from=rg[0];state.to=rg[1];
     if(!state.emps.some(inRange)){rg=presetRange('all');state.preset='all';state.from=rg[0];state.to=rg[1]}
-    setNote('');syncFilters();renderAll();
-  }catch(e){/* no shared file: keep the sample */}
+    setNote(isSample?SAMPLE_NOTE:'');syncFilters();renderAll();
+  }catch(e){/* no shared file: keep the built-in sample */}
 }
 
 /* ---------- events ---------- */
