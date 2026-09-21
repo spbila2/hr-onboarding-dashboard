@@ -1,3 +1,6 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>קליטת עובדים</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5,172 +8,225 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --page:#f3f5f8; --surface:#ffffff; --ink:#14202e; --ink2:#465567; --muted:#66727f;
-  --line:#dde3ea; --line2:#c4ccd6; --accent:#256abf; --accent-soft:#e8f0fb;
-  --done:#256abf; --prog:#86b6ef; --todo:#d5dbe3; --bad:#d03b3b; --bad-ink:#b02a2a;
+  --page:#f3f5f8; --surface:#ffffff; --ink:#14202e; --ink2:#465567; --muted:#56616e;
+  --line:#dde3ea; --line2:#b9c3cf;
+  --blue:#256abf; --blue-lite:#86b6ef; --blue-soft:#e8f0fb; --on-blue:#ffffff;
+  --orange:#eb6834; --orange-ink:#b8430d; --orange-soft:#fdece3; --on-orange:#14202e; --orange-mark:#eb6834;
+  --todo:#d5dbe3;
   --tip-bg:#14202e; --tip-ink:#f3f5f8;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --page:#0e131a; --surface:#161d27; --ink:#eef2f6; --ink2:#b4bfcc; --muted:#8b98a8;
-    --line:#263140; --line2:#3a4859; --accent:#5598e7; --accent-soft:#1a2a40;
-    --done:#5598e7; --prog:#2a5f9f; --todo:#313c4b; --bad:#e66767; --bad-ink:#f08a8a;
+    --page:#0e131a; --surface:#161d27; --ink:#eef2f6; --ink2:#b4bfcc; --muted:#98a5b4;
+    --line:#263140; --line2:#3a4859;
+    --blue:#5598e7; --blue-lite:#2a5f9f; --blue-soft:#1a2a40; --on-blue:#0e131a;
+    --orange:#eb6834; --orange-ink:#f08a5d; --orange-soft:#2c1f1a; --on-orange:#14202e; --orange-mark:#d95926;
+    --todo:#313c4b;
     --tip-bg:#eef2f6; --tip-ink:#14202e;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --page:#0e131a; --surface:#161d27; --ink:#eef2f6; --ink2:#b4bfcc; --muted:#8b98a8;
-  --line:#263140; --line2:#3a4859; --accent:#5598e7; --accent-soft:#1a2a40;
-  --done:#5598e7; --prog:#2a5f9f; --todo:#313c4b; --bad:#e66767; --bad-ink:#f08a8a;
+  --page:#0e131a; --surface:#161d27; --ink:#eef2f6; --ink2:#b4bfcc; --muted:#98a5b4;
+  --line:#263140; --line2:#3a4859;
+  --blue:#5598e7; --blue-lite:#2a5f9f; --blue-soft:#1a2a40; --on-blue:#0e131a;
+  --orange:#eb6834; --orange-ink:#f08a5d; --orange-soft:#2c1f1a; --on-orange:#14202e; --orange-mark:#d95926;
+  --todo:#313c4b;
   --tip-bg:#eef2f6; --tip-ink:#14202e;
   color-scheme:dark;
 }
-body{background:var(--page);color:var(--ink);font-family:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:14px;line-height:1.5}
 *{box-sizing:border-box}
-.wrap{max-width:1200px;margin:0 auto;padding-inline:20px;padding-block:28px 56px;display:flex;flex-direction:column;gap:36px}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-button,select,input{font:inherit;color:inherit}
+body{background:var(--page);color:var(--ink);font-family:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:18px;line-height:1.5}
+button,select,input,summary{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:24px;padding-block:32px 72px;display:flex;flex-direction:column;gap:48px}
 
-/* header */
-.top{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between}
-.eyebrow{margin:0 0 2px;font-size:13px;font-weight:500;color:var(--accent);letter-spacing:.02em}
-h1{margin:0;font-size:32px;line-height:1.15;font-weight:700;letter-spacing:-.01em}
-.asof{margin:6px 0 0;color:var(--muted);font-size:13px}
-.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
-.fld{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
-select,input[type=number]{height:36px;padding-inline:10px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);min-width:0}
-input[type=number]{width:80px}
-.btn{height:36px;padding-inline:14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-:root[data-theme="dark"] .btn{color:#0e131a}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#0e131a}}
-.btn.ghost{background:transparent;color:var(--ink2);border-color:var(--line2);font-weight:500}
-:root[data-theme="dark"] .btn.ghost{color:var(--ink2)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.ghost{color:var(--ink2)}}
-.btn:hover{filter:brightness(1.06)}
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding-inline:22px;border-radius:10px;border:2px solid transparent;font-size:18px;font-weight:700;line-height:1;cursor:pointer;transition:filter .15s,background-color .15s;white-space:nowrap}
+.btn svg{width:22px;height:22px;flex:none}
+.btn.primary{background:var(--orange);color:var(--on-orange)}
+.btn.primary:hover{filter:brightness(.93)}
+.btn.primary:active{filter:brightness(.86)}
+.btn.secondary{background:var(--blue);color:var(--on-blue)}
+.btn.secondary:hover{filter:brightness(1.08)}
+.btn.secondary:active{filter:brightness(.92)}
+.btn.tertiary{background:transparent;border-color:var(--blue);color:var(--blue)}
+.btn.tertiary:hover{background:var(--blue-soft)}
+.btn.sm{height:44px;padding-inline:16px;font-size:16px}
+.btn[aria-disabled="true"],.btn:disabled{background:var(--todo);border-color:transparent;color:var(--ink2);cursor:not-allowed;filter:none}
 
-.note{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--accent-soft);color:var(--ink);font-size:13px;margin-top:-16px}
+/* ---------- header ---------- */
+.top{display:flex;flex-wrap:wrap;gap:20px 32px;align-items:flex-end;justify-content:space-between}
+.eyebrow{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--blue)}
+h1{margin:0;font-size:40px;line-height:1.15;font-weight:700;letter-spacing:-.01em}
+.asof{margin:8px 0 0;color:var(--muted);font-size:16px}
+.tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.note{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center;padding:14px 20px;border-radius:12px;background:var(--blue-soft);font-size:16px;margin-top:-24px}
 .note[hidden]{display:none!important}
-.note.err{background:transparent;border:1px solid var(--bad);color:var(--bad-ink)}
-.note b{font-weight:600}
+.note.warn{background:var(--orange-soft);border:2px solid var(--orange)}
+.note b{font-weight:700}
 
-/* sections */
-.sec{display:flex;flex-direction:column;gap:16px}
-.sec-h{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:flex-end;justify-content:space-between}
-.sec-h h2{margin:0;font-size:21px;font-weight:700;line-height:1.25;text-wrap:balance}
-.sub{margin:3px 0 0;color:var(--muted);font-size:13px;max-width:62ch}
-.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
-.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--surface)}
-.seg button{height:34px;padding-inline:12px;border:0;background:transparent;color:var(--ink2);cursor:pointer;font-size:13px}
-.seg button+button{border-inline-start:1px solid var(--line2)}
-.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
-:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0e131a}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0e131a}}
+/* ---------- filters ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 24px;margin-top:-16px}
+@media (min-width:900px){.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;box-shadow:0 6px 16px -10px rgba(0,0,0,.35)}}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld>span{font-size:16px;color:var(--ink2);font-weight:500}
+input[type=date],#weekSel{height:52px;padding-inline:12px;border:2px solid var(--line2);border-radius:10px;background:var(--surface);font-size:18px;min-width:0}
+input[type=date]{width:190px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{height:48px;padding-inline:16px;border:2px solid var(--line2);border-radius:10px;background:transparent;color:var(--ink);font-size:17px;font-weight:500;cursor:pointer}
+.seg button:hover{background:var(--blue-soft)}
+.seg button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--on-blue);font-weight:700}
+.seg button[aria-pressed="true"]::before{content:"✓ "}
+.ms{position:relative}
+.ms summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;height:52px;padding-inline:14px;border:2px solid var(--line2);border-radius:10px;background:var(--surface);cursor:pointer;min-width:200px;font-size:18px}
+.ms summary::-webkit-details-marker{display:none}
+.ms summary::after{content:"▾";color:var(--ink2)}
+.ms[open] summary{border-color:var(--blue)}
+.ms-list{position:absolute;inset-inline-start:0;top:calc(100% + 6px);z-index:40;min-width:100%;width:max-content;max-width:min(340px,90vw);max-height:320px;overflow:auto;background:var(--surface);border:2px solid var(--blue);border-radius:10px;padding:8px;box-shadow:0 10px 24px -8px rgba(0,0,0,.4)}
+.ms-list label{display:flex;align-items:center;gap:12px;min-height:44px;padding-inline:10px;border-radius:8px;cursor:pointer;font-size:17px}
+.ms-list label:hover{background:var(--blue-soft)}
+.ms-list input{width:22px;height:22px;accent-color:var(--blue)}
+.factions{display:flex;flex-wrap:wrap;gap:12px;margin-inline-start:auto}
+.rmsg{flex-basis:100%;margin:0;font-size:16px;color:var(--orange-ink);font-weight:600}
+.rmsg:empty{display:none}
 
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;min-width:0}
-.panel h3{margin:0 0 2px;font-size:15px;font-weight:600}
-.hint{margin:0 0 14px;color:var(--muted);font-size:12px}
-.panel h3+.bl,.panel h3+.empty{margin-top:12px}
-.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+/* ---------- sections and panels ---------- */
+.sec{display:flex;flex-direction:column;gap:24px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-end;justify-content:space-between}
+.sec-h h2{margin:0;font-size:28px;font-weight:700;line-height:1.25;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted);font-size:16px;max-width:70ch}
+.out{display:flex;flex-direction:column;gap:24px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;min-width:0}
+.panel-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.panel h3{margin:0;font-size:20px;font-weight:600;line-height:1.3}
+.hint{margin:2px 0 0;color:var(--muted);font-size:16px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:24px}
+.empty{color:var(--muted);font-size:17px;padding:8px 0}
+.empty .btn{margin-top:16px}
 
-/* KPI strip */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.kpi{padding:18px 22px;display:flex;flex-direction:column;gap:2px;min-width:0}
+/* ---------- KPI strip ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kpi{padding:24px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .kpi+.kpi{border-inline-start:1px solid var(--line)}
 @media (max-width:900px){.kpi{border-top:1px solid var(--line)}.kpi:first-child{border-top:0}.kpi+.kpi{border-inline-start:0}}
-.kpi .l{font-size:13px;color:var(--ink2)}
-.kpi .v{font-size:34px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
-.kpi.hero .v{font-size:60px;line-height:1.05;color:var(--accent)}
-.kpi .s{font-size:12px;color:var(--muted)}
-.kpi .v small{font-size:15px;font-weight:500;color:var(--muted);margin-inline-start:6px;letter-spacing:0}
-.meter{height:8px;border-radius:4px;background:var(--todo);margin-top:8px;overflow:hidden;display:flex}
-.meter i{display:block;background:var(--done);border-radius:4px}
+.kpi .l{font-size:18px;color:var(--ink2);font-weight:500}
+.kpi .v{font-size:48px;font-weight:700;line-height:1.1;letter-spacing:-.01em}
+.kpi.hero .v{font-size:72px;line-height:1;color:var(--blue)}
+.kpi .s{font-size:16px;color:var(--muted)}
+.meter{height:12px;border-radius:6px;background:var(--todo);margin-top:10px;overflow:hidden;display:flex}
+.meter i{display:block;background:var(--blue);border-radius:6px}
 
-/* column chart */
-.cols{display:flex;gap:4px;height:170px;align-items:stretch;border-bottom:1px solid var(--line2);padding-top:8px}
-.col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;background:transparent;border:0;padding:0;cursor:pointer;position:relative}
-.col-v{font-size:12px;font-weight:600;color:var(--ink);height:16px;line-height:16px}
-.col-b{width:min(100%,22px);background:var(--prog);border-radius:4px 4px 0 0;min-height:2px}
-.col.on .col-b{background:var(--done)}
-.col:hover .col-b{background:var(--done);opacity:.8}
-.col.on:hover .col-b{opacity:1}
-.cols-l{display:flex;gap:4px;margin-top:6px}
-.cols-l span{flex:1 1 0;min-width:0;text-align:center;font-size:11px;color:var(--muted);white-space:nowrap}
-.cols-l span.on{color:var(--ink);font-weight:600}
+/* ---------- column chart ---------- */
+.cols{display:flex;gap:6px;height:190px;align-items:stretch;border-bottom:1px solid var(--line2);padding-top:8px}
+.col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;background:transparent;border:0;padding:0;cursor:pointer}
+.col-v{font-size:16px;font-weight:700;height:22px;line-height:22px}
+.col-b{width:min(100%,24px);background:var(--blue-lite);border-radius:4px 4px 0 0;min-height:2px}
+.col.on .col-b{background:var(--blue)}
+.col:hover .col-b{background:var(--blue)}
+.cols-l{display:flex;gap:6px;margin-top:8px}
+.cols-l span{flex:1 1 0;min-width:0;text-align:center;font-size:14px;color:var(--muted);white-space:nowrap}
+.cols-l span.on{color:var(--ink);font-weight:700}
 
-/* bar list */
-.bl{display:flex;flex-direction:column;gap:10px}
-.bl-r{display:grid;grid-template-columns:minmax(80px,38%) 1fr;gap:10px;align-items:center}
-.bl-l{font-size:13px;color:var(--ink2);line-height:1.3;overflow-wrap:anywhere}
-.bl-t{display:flex;align-items:center;gap:8px;height:20px}
-.bl-f{height:14px;background:var(--accent);border-radius:4px 0 0 4px;min-width:3px}
-.bl-v{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
-.empty{color:var(--muted);font-size:13px;padding:8px 0}
+/* ---------- bar list ---------- */
+.bl{display:flex;flex-direction:column;gap:14px}
+.bl-r{display:grid;grid-template-columns:minmax(90px,38%) 1fr;gap:12px;align-items:center}
+.bl-l{font-size:16px;color:var(--ink2);line-height:1.3;overflow-wrap:anywhere}
+.bl-t{display:flex;align-items:center;gap:10px;height:24px}
+.bl-f{height:20px;background:var(--blue);border-radius:4px 0 0 4px;min-width:4px}
+.bl-v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
 
-/* stacked bars */
-.stk{display:flex;gap:2px;height:14px;min-width:0}
-.stk i{display:block;border-radius:3px;min-width:4px}
-.s-done{background:var(--done)}.s-prog{background:var(--prog)}.s-todo{background:var(--todo)}.s-bad{background:var(--bad)}
-.lg{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--ink2)}
-.lg span{display:inline-flex;align-items:center;gap:6px}
-.lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.trow{display:grid;grid-template-columns:110px 1fr 84px;gap:14px;align-items:center;padding-block:7px}
-.trow .tl{font-size:13px;font-weight:500}
-.trow .tn{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:end}
-.onb-top{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between;margin-bottom:10px}
-.onb-big{font-size:15px;color:var(--ink2)}
-.onb-big b{font-size:34px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-inline-end:4px}
-.dept-r{display:grid;grid-template-columns:minmax(80px,140px) 1fr 54px;gap:14px;align-items:center;padding-block:6px}
-.dept-r .tl{font-size:13px;color:var(--ink2)}
-.dept-r .tn{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:end}
+/* ---------- stacked bars and legend ---------- */
+.stk{display:flex;gap:2px;height:20px;min-width:0}
+.stk i{display:block;border-radius:4px;min-width:5px}
+.s-done{background:var(--blue)}.s-prog{background:var(--blue-lite)}.s-todo{background:var(--todo)}.s-out{background:var(--orange-mark)}
+.lg{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:16px;color:var(--ink2)}
+.lg span{display:inline-flex;align-items:center;gap:8px}
+.lg i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.trow{display:grid;grid-template-columns:120px 1fr minmax(120px,auto);gap:16px;align-items:center;padding-block:10px}
+.trow .tl{font-size:18px;font-weight:600}
+.trow .tn{font-size:16px;color:var(--ink2);text-align:end;font-variant-numeric:tabular-nums}
+.trow .tn .ex{display:block;color:var(--orange-ink);font-weight:700}
+.onb-top{display:flex;flex-wrap:wrap;gap:12px 32px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.onb-big{font-size:18px;color:var(--ink2)}
+.onb-big b{font-size:48px;font-weight:700;color:var(--blue);letter-spacing:-.01em;margin-inline-end:8px;line-height:1}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;font-size:16px;font-weight:700}
+.badge svg{width:20px;height:20px;flex:none}
+.badge.bad{background:var(--orange-soft);border:2px solid var(--orange);color:var(--orange-ink)}
+.badge.good{background:var(--blue-soft);color:var(--blue)}
+.dept-r{display:grid;grid-template-columns:minmax(90px,150px) 1fr 84px;gap:16px;align-items:center;padding-block:8px}
+.dept-r .tl{font-size:16px;color:var(--ink2)}
+.dept-r .tn{font-size:16px;color:var(--muted);text-align:end;font-variant-numeric:tabular-nums}
 
-/* probation tiles */
-.ptiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.ptile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:2px}
-.ptile .l{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
-.ptile .l i{width:10px;height:10px;border-radius:3px}
-.ptile .v{font-size:34px;font-weight:700;line-height:1.15}
-.ptile .v small{font-size:14px;font-weight:500;color:var(--muted);margin-inline-start:6px}
-.ptile .s{font-size:12px;color:var(--muted)}
+/* ---------- probation tiles ---------- */
+.ptiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px}
+.ptile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:2px}
+.ptile .l{display:flex;align-items:center;gap:10px;font-size:18px;color:var(--ink2);font-weight:500}
+.ptile .l i{width:14px;height:14px;border-radius:4px;flex:none}
+.ptile .v{font-size:48px;font-weight:700;line-height:1.15}
+.ptile .v small{font-size:20px;font-weight:500;color:var(--muted);margin-inline-start:8px}
+.ptile .s{font-size:16px;color:var(--muted)}
 
-/* tables */
+/* ---------- tables ---------- */
 .tbl{overflow:auto;max-width:100%}
-.tbl.tall{max-height:460px}
+.tbl.tall{max-height:560px}
 table{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
-th{position:sticky;top:0;background:var(--surface);text-align:start;font-size:12px;font-weight:500;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--line2);white-space:nowrap;z-index:1}
-td{padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;vertical-align:middle}
+th{position:sticky;top:0;z-index:2;background:var(--surface);text-align:start;font-size:14px;font-weight:700;color:var(--ink2);padding:10px 14px;border-bottom:2px solid var(--line2);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--line);font-size:16px;white-space:nowrap;vertical-align:middle;height:56px}
 tr:last-child td{border-bottom:0}
-td.nm{font-weight:600}
-td .mut{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+th.nm,td.nm{position:sticky;inset-inline-start:0;background:var(--surface)}
+th.nm{z-index:4}td.nm{z-index:1;font-weight:700;font-size:17px}
+td .mut{display:block;font-weight:400;font-size:14px;color:var(--muted)}
 th.c,td.c{text-align:center}
-.chip{display:inline-flex;width:20px;height:20px;cursor:default}
-.chip svg{width:20px;height:20px;display:block}
-.miss{display:inline-block;min-width:22px;padding:1px 8px;border-radius:99px;background:var(--accent-soft);font-size:12px;font-weight:600;text-align:center}
-.mini{display:flex;align-items:center;gap:10px}
-.mini .tr{width:130px;height:8px;border-radius:4px;background:var(--todo);overflow:hidden;display:flex}
-.mini .tr i{display:block;background:var(--done);border-radius:4px}
-.mini .tr i.bad{background:var(--bad)}
-.mini span{font-size:12px;color:var(--ink2);min-width:64px}
-.bad-t{color:var(--bad-ink);font-weight:500}
+tr.exc td.nm{box-shadow:inset -5px 0 0 var(--orange)}
+.warnline{display:flex;align-items:center;gap:6px;color:var(--orange-ink);font-size:14px;font-weight:700}
+.warnline svg{width:16px;height:16px;flex:none}
+.chip{display:inline-flex;width:26px;height:26px;cursor:default}
+.chip svg{width:26px;height:26px;display:block}
+.exc-c{display:inline-flex;flex-direction:column;align-items:center;color:var(--orange-ink);font-size:14px;font-weight:700;line-height:1.2;cursor:default}
+.exc-c svg{width:26px;height:26px}
+.miss{display:inline-block;min-width:28px;padding:2px 10px;border-radius:99px;background:var(--blue-soft);font-size:16px;font-weight:700;text-align:center}
+.miss.bad{background:var(--orange-soft);color:var(--orange-ink);border:2px solid var(--orange)}
+.mini{display:flex;align-items:center;gap:12px}
+.mini .tr{width:150px;height:12px;border-radius:6px;background:var(--todo);overflow:hidden;display:flex}
+.mini .tr i{display:block;background:var(--blue);border-radius:6px}
+.mini span{font-size:16px;color:var(--ink2);min-width:84px}
+.out-t{color:var(--orange-ink);font-weight:700}
 .ok-t{color:var(--ink2)}
 .list{display:flex;flex-direction:column}
-.list-r{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line)}
+.list-r{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);min-height:56px}
 .list-r:last-child{border-bottom:0}
-.list-r b{font-weight:600;font-size:13px}
-.list-r .mut{display:block;font-size:12px;color:var(--muted)}
-.list-r .r{text-align:end;font-size:12px;color:var(--ink2);white-space:nowrap}
-.list.scroll{max-height:300px;overflow:auto}
-.foot{font-size:12px;color:var(--muted);max-width:90ch;margin:0}
+.list-r b{font-weight:700;font-size:17px}
+.list-r .mut{display:block;font-size:14px;color:var(--muted)}
+.list-r .r{text-align:end;font-size:16px;color:var(--ink2);white-space:nowrap}
+.list.scroll{max-height:340px;overflow:auto}
+.foot{font-size:16px;color:var(--muted);max-width:90ch;margin:0}
 
-#tip{position:fixed;z-index:50;pointer-events:none;background:var(--tip-bg);color:var(--tip-ink);font-size:12px;line-height:1.35;padding:6px 9px;border-radius:6px;max-width:260px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip{position:fixed;z-index:60;pointer-events:none;background:var(--tip-bg);color:var(--tip-ink);font-size:14px;line-height:1.4;padding:8px 12px;border-radius:8px;max-width:280px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 #tip[hidden]{display:none!important}
-.drop{outline:2px dashed var(--accent);outline-offset:-8px}
-@media (max-width:560px){
-  h1{font-size:26px}.kpi.hero .v{font-size:52px}
-  .trow{grid-template-columns:78px 1fr 60px;gap:10px}
-  .dept-r{grid-template-columns:78px 1fr 46px;gap:10px}
+.drop{outline:3px dashed var(--blue);outline-offset:-10px}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .wrap{padding-inline:16px;gap:40px}
+  h1{font-size:30px}
+  .sec-h h2{font-size:24px}
+  .panel h3{font-size:18px}
+  .kpi .v{font-size:40px}.kpi.hero .v{font-size:56px}
+  .ptile .v,.onb-big b{font-size:40px}
+  .btn{height:48px}
+  .tools .btn,.factions .btn{flex:1 1 100%}
+  .filters{padding:16px}
+  input[type=date]{width:100%}
+  .fld{flex:1 1 140px}
+  .ms summary{min-width:0;width:100%}
+  .trow{grid-template-columns:84px 1fr;gap:8px 12px}
+  .trow .tn{grid-column:1/-1;text-align:start}
+  .dept-r{grid-template-columns:90px 1fr;gap:8px 12px}
+  .dept-r .tn{grid-column:1/-1;text-align:start}
+  .bl-r{grid-template-columns:1fr;gap:4px}
 }
 </style>
 
@@ -182,50 +238,66 @@ th.c,td.c{text-align:center}
       <p class="asof" id="asof"></p>
     </div>
     <div class="tools">
-      <label class="fld" for="monthSel"><span>חודש להצגה</span><select id="monthSel"></select></label>
-      <button class="btn" id="importBtn" type="button">טעינת קובץ נתונים</button>
-      <button class="btn ghost" id="resetBtn" type="button" hidden>חזרה לנתוני דוגמה</button>
-      <input type="file" id="fileIn" accept=".xlsx,.xls,.csv,.txt" hidden>
+      <button class="btn primary" id="empBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6.5 9.5 12 4l5.5 5.5M4 20h16"/></svg>טעינת קובץ עובדים</button>
+      <button class="btn secondary" id="attBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6.5 9.5 12 4l5.5 5.5M4 20h16"/></svg>טעינת קובץ נוכחות</button>
+      <button class="btn tertiary" id="resetBtn" type="button" hidden>חזרה לנתוני דוגמה</button>
+      <input type="file" id="empIn" accept=".xlsx,.xls,.csv,.txt" hidden>
+      <input type="file" id="attIn" accept=".xlsx,.xls,.csv,.txt" hidden>
     </div>
   </header>
 
   <div class="note" id="note" role="status" hidden></div>
 
-  <section class="sec" aria-labelledby="h-month">
-    <div class="sec-h"><div><h2 id="h-month">מי נכנס החודש?</h2><p class="sub" id="sub-month"></p></div></div>
-    <div id="out-month" class="sec"></div>
+  <div class="filters" id="filters" role="region" aria-label="סינון הנתונים">
+    <div class="fld" role="group" aria-labelledby="presetLbl">
+      <span id="presetLbl">תקופת קליטה (לפי תאריך תחילת עבודה)</span>
+      <div class="seg" id="presetSeg">
+        <button type="button" data-preset="month" aria-pressed="true">החודש</button>
+        <button type="button" data-preset="prev" aria-pressed="false">חודש קודם</button>
+        <button type="button" data-preset="3" aria-pressed="false">3 חודשים</button>
+        <button type="button" data-preset="6" aria-pressed="false">6 חודשים</button>
+        <button type="button" data-preset="year" aria-pressed="false">שנה</button>
+        <button type="button" data-preset="all" aria-pressed="false">הכול</button>
+      </div>
+    </div>
+    <label class="fld" for="fromIn"><span>מתאריך</span><input type="date" id="fromIn"></label>
+    <label class="fld" for="toIn"><span>עד תאריך</span><input type="date" id="toIn"></label>
+    <div class="fld">
+      <span id="deptLbl">מחלקות</span>
+      <details class="ms" id="deptMs"><summary id="deptSum">כל המחלקות</summary><div class="ms-list" id="deptList"></div></details>
+    </div>
+    <div class="factions">
+      <button class="btn primary" id="exportBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6.5 10.5 12 16l5.5-5.5M4 20h16"/></svg>ייצוא לקובץ Excel</button>
+      <button class="btn tertiary" id="clearBtn" type="button">איפוס סינון</button>
+    </div>
+    <p class="rmsg" id="rmsg" role="alert"></p>
+  </div>
+
+  <section class="sec" aria-labelledby="h-join">
+    <div class="sec-h"><div><h2 id="h-join">מי נכנס?</h2><p class="sub" id="sub-join"></p></div></div>
+    <div id="out-join" class="out"></div>
   </section>
 
   <section class="sec" aria-labelledby="h-onb">
-    <div class="sec-h">
-      <div><h2 id="h-onb">איפה עומד תהליך הקליטה?</h2><p class="sub">חוזה, טופס 101, הדרכות, ציוד והרשאות: כמה השלימו וכמה עוד באמצע. עובדים שעזבו לא נכללים.</p></div>
-      <div class="seg" id="scopeSeg" role="group" aria-label="אוכלוסיית העובדים">
-        <button type="button" data-scope="month" aria-pressed="true">נקלטו בחודש שנבחר</button>
-        <button type="button" data-scope="all" aria-pressed="false">כל העובדים הפעילים</button>
-      </div>
-    </div>
-    <div id="out-onb" class="sec"></div>
+    <div class="sec-h"><div><h2 id="h-onb">איפה עומד תהליך הקליטה?</h2>
+      <p class="sub">חוזה, טופס 101, הדרכות, ציוד והרשאות. משימה פתוחה מעבר לסף מסומנת כחריגה: חוזה וטופס 101 אחרי 7 ימים, ציוד והרשאות אחרי 14, הדרכות אחרי 30. עובדים שעזבו לא נכללים.</p></div></div>
+    <div id="out-onb" class="out"></div>
   </section>
 
   <section class="sec" aria-labelledby="h-prob">
-    <div class="sec-h">
-      <div><h2 id="h-prob">מה קורה בתקופת הניסיון?</h2><p class="sub">כל מי שהתחיל לעבוד. “הסתיימו בלי המשך” הם עובדים שעזבו לפני סוף תקופת הניסיון.</p></div>
-      <label class="fld" for="probSel"><span>אורך תקופת הניסיון</span>
-        <select id="probSel"><option value="3">3 חודשים</option><option value="6">6 חודשים</option></select></label>
-    </div>
-    <div id="out-prob" class="sec"></div>
+    <div class="sec-h"><div><h2 id="h-prob">מה קורה בתקופת הניסיון?</h2>
+      <p class="sub">תקופת הניסיון היא 6 חודשים מתחילת העבודה. “הסתיימו בלי המשך” הם עובדים שעזבו לפני סיומה.</p></div></div>
+    <div id="out-prob" class="out"></div>
   </section>
 
   <section class="sec" aria-labelledby="h-half">
     <div class="sec-h">
-      <div><h2 id="h-half">כמה עבדו בחצי השנה הראשונה?</h2><p class="sub">ימי ושעות עבודה מתאריך תחילת העבודה ועד חצי שנה, עזיבה או היום, המוקדם מביניהם.</p></div>
-      <div class="ctl">
-        <label class="fld" for="weekSel"><span>שבוע עבודה</span>
-          <select id="weekSel"><option value="sun">ראשון עד חמישי</option><option value="mon">שני עד שישי</option></select></label>
-        <label class="fld" for="hoursIn"><span>שעות ליום</span><input id="hoursIn" type="number" min="1" max="12" step="0.1" value="8.4"></label>
-      </div>
+      <div><h2 id="h-half">כמה עבדו בחצי השנה הראשונה?</h2>
+        <p class="sub">ימים ושעות בפועל מקובץ הנוכחות, מתחילת העבודה ועד חצי שנה, עזיבה או היום, המוקדם מביניהם.</p></div>
+      <label class="fld" for="weekSel"><span>שבוע עבודה (לימי עבודה אפשריים)</span>
+        <select id="weekSel"><option value="sun">ראשון עד חמישי</option><option value="mon">שני עד שישי</option></select></label>
     </div>
-    <div id="out-half" class="sec"></div>
+    <div id="out-half" class="out"></div>
   </section>
 </div>
 <div id="tip" hidden role="tooltip"></div>
@@ -233,400 +305,666 @@ th.c,td.c{text-align:center}
 <script>
 (function(){
 'use strict';
-var DAY=864e5, LS_KEY='hr-onboarding-dashboard-v1';
-function utc(y,m,d){return Date.UTC(y,m,d)}
-var now=new Date(), TODAY=utc(now.getFullYear(),now.getMonth(),now.getDate());
-function addMonths(t,n){var d=new Date(t),day=d.getUTCDate(),r=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+n,1)),last=new Date(Date.UTC(r.getUTCFullYear(),r.getUTCMonth()+1,0)).getUTCDate();r.setUTCDate(Math.min(day,last));return r.getTime()}
-function monthKey(t){var d=new Date(t);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')}
-function keyToT(k){var p=k.split('-').map(Number);return utc(p[0],p[1]-1,1)}
-function monthLabel(k){return new Date(keyToT(k)).toLocaleDateString('he-IL',{month:'long',year:'numeric',timeZone:'UTC'})}
-function monthName(k){return new Date(keyToT(k)).toLocaleDateString('he-IL',{month:'long',timeZone:'UTC'})}
-function monthShort(k){return new Date(keyToT(k)).toLocaleDateString('he-IL',{month:'short',timeZone:'UTC'})}
-function p2(n){return String(n).padStart(2,'0')}
-function fmtDate(t){var d=new Date(t);return p2(d.getUTCDate())+'.'+p2(d.getUTCMonth()+1)+'.'+String(d.getUTCFullYear()).slice(2)}
-function num(x){return Math.round(x).toLocaleString('he-IL')}
-function pct(a,b){return b?Math.round(a/b*100):0}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
-function $(s){return document.querySelector(s)}
-var CUR=monthKey(TODAY);
+const DAY=864e5;
+const utc=(y,m,d)=>Date.UTC(y,m,d);
+const _n=new Date(), TODAY=utc(_n.getFullYear(),_n.getMonth(),_n.getDate());
+const pad2=n=>String(n).padStart(2,'0');
+function addMonths(t,n){const d=new Date(t),day=d.getUTCDate(),r=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+n,1)),last=new Date(Date.UTC(r.getUTCFullYear(),r.getUTCMonth()+1,0)).getUTCDate();r.setUTCDate(Math.min(day,last));return r.getTime()}
+const monthKey=t=>{const d=new Date(t);return d.getUTCFullYear()+'-'+pad2(d.getUTCMonth()+1)};
+const keyToT=k=>{const p=k.split('-').map(Number);return utc(p[0],p[1]-1,1)};
+const addKey=(k,n)=>monthKey(addMonths(keyToT(k),n));
+const monthShort=k=>new Date(keyToT(k)).toLocaleDateString('he-IL',{month:'short',timeZone:'UTC'});
+const monthLabel=k=>new Date(keyToT(k)).toLocaleDateString('he-IL',{month:'long',year:'numeric',timeZone:'UTC'});
+const fmtDate=t=>{const d=new Date(t);return pad2(d.getUTCDate())+'.'+pad2(d.getUTCMonth()+1)+'.'+String(d.getUTCFullYear()).slice(2)};
+const isoOf=t=>new Date(t).toISOString().slice(0,10);
+const fromIso=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?utc(+m[1],+m[2]-1,+m[3]):null};
+const endOfMonth=t=>addMonths(t,1)-DAY;
+const dayOfMs=ms=>{const d=new Date(ms);return utc(d.getFullYear(),d.getMonth(),d.getDate())};
+const num=x=>Math.round(x).toLocaleString('he-IL');
+const num1=x=>(Math.round(x*10)/10).toLocaleString('he-IL',{maximumFractionDigits:1});
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const $=s=>document.querySelector(s);
+const CUR=monthKey(TODAY);
 
-/* ---------- task vocabulary ---------- */
-var TASKS=[
+/* ---------- tasks, thresholds, statuses ---------- */
+const TASKS=[
   {id:'contract',label:'חוזה',keys:['חוזה','contract']},
   {id:'f101',label:'טופס 101',keys:['101']},
   {id:'training',label:'הדרכות',keys:['הדרכ','training']},
   {id:'equipment',label:'ציוד',keys:['ציוד','equipment']},
   {id:'access',label:'הרשאות',keys:['הרשא','access','permission']}
 ];
-var ST={done:'הושלם',prog:'בתהליך',todo:'טרם התחיל'};
-var DONE_V=['הושלם','הושלמה','בוצע','בוצעה','נחתם','נחתמה','הסתיים','v','✓','✔','כן','yes','done','complete','completed','true','1','אושר','סופק','התקבל','נמסר'];
-var PROG_V=['בתהליך','באמצע','חלקי','בטיפול','נשלח','ממתין','בהמתנה','in progress','pending','partial','wip'];
-var TODO_V=['לא הושלם','לא בוצע','טרם','לא התחיל','לא','no','פתוח','0','false','open','todo','לא נחתם'];
+const THR={contract:7,f101:7,equipment:14,access:14,training:30}, THR_DEFAULT=14;
+const ST={done:'הושלם',prog:'בתהליך',todo:'טרם התחיל'};
+const DONE_V=['הושלם','הושלמה','בוצע','בוצעה','נחתם','נחתמה','הסתיים','v','✓','✔','כן','yes','done','complete','completed','true','1','אושר','סופק','התקבל','נמסר'];
+const PROG_V=['בתהליך','באמצע','חלקי','בטיפול','נשלח','ממתין','בהמתנה','in progress','pending','partial','wip'];
+const TODO_V=['לא הושלם','לא בוצע','טרם','לא התחיל','לא','no','פתוח','0','false','open','todo','לא נחתם'];
 function normStatus(v){
   if(v===true)return'done'; if(v==null)return'todo';
-  var s=String(v).trim().toLowerCase(); if(!s)return'todo';
-  if(DONE_V.indexOf(s)>-1)return'done';
-  if(PROG_V.some(function(x){return s.indexOf(x)>-1}))return'prog';
+  const s=String(v).trim().toLowerCase(); if(!s)return'todo';
+  if(DONE_V.includes(s))return'done';
+  if(PROG_V.some(x=>s.includes(x)))return'prog';
   if(/^(הושל|בוצ|נחתמ|done|complete)/.test(s))return'done';
   return'todo';
 }
-function statusKnown(v){
-  var s=String(v==null?'':v).trim().toLowerCase();
-  return DONE_V.indexOf(s)>-1||TODO_V.indexOf(s)>-1||PROG_V.some(function(x){return s.indexOf(x)>-1})||/^(הושל|בוצ|נחתמ|טרם|לא )/.test(s);
-}
+const statusKnown=v=>{const s=String(v==null?'':v).trim().toLowerCase();return DONE_V.includes(s)||TODO_V.includes(s)||PROG_V.some(x=>s.includes(x))||/^(הושל|בוצ|נחתמ|טרם|לא )/.test(s)};
 
-/* ---------- import ---------- */
+/* ---------- ID numbers (never displayed in full) ---------- */
+function normId(v){
+  let s=(typeof v==='number')?String(Math.round(v)):String(v==null?'':v);
+  s=s.replace(/\D/g,''); if(!s)return null;
+  return s.length<9?s.padStart(9,'0'):s;
+}
+function idOk(s){
+  if(!/^\d{9}$/.test(s))return false;
+  let sum=0;for(let i=0;i<9;i++){let d=+s[i]*((i%2)+1);if(d>9)d-=9;sum+=d}
+  return sum%10===0;
+}
+function makeId(b8){let sum=0;for(let i=0;i<8;i++){let d=+b8[i]*((i%2)+1);if(d>9)d-=9;sum+=d}return b8+((10-sum%10)%10)}
+const maskId=s=>'*****'+String(s).slice(-4);
+
+/* ---------- reading files ---------- */
 function parseDate(v){
   if(v==null||v==='')return null;
-  if(typeof v==='number'){ if(v>20000&&v<80000){var d=new Date(utc(1899,11,30)+Math.floor(v)*DAY);return utc(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())} return null }
-  var s=String(v).trim(),m;
-  if((m=s.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})/))){var y=+m[3];if(y<100)y+=2000;return utc(y,+m[2]-1,+m[1])}
+  if(typeof v==='number'){if(v>20000&&v<80000){const d=new Date(utc(1899,11,30)+Math.floor(v)*DAY);return utc(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}return null}
+  const s=String(v).trim();let m;
+  if((m=s.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})/))){let y=+m[3];if(y<100)y+=2000;return utc(y,+m[2]-1,+m[1])}
   if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))return utc(+m[1],+m[2]-1,+m[3]);
   return null;
 }
 function parseCSV(text){
   text=text.replace(/^﻿/,'');
-  var first=text.split(/\r?\n/,1)[0];
-  var delim=[',',';','\t'].map(function(d){return[d,first.split(d).length]}).sort(function(a,b){return b[1]-a[1]})[0][0];
-  var rows=[],row=[],cur='',q=false;
-  for(var i=0;i<text.length;i++){
-    var c=text[i];
-    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++} else q=false } else cur+=c }
+  const first=text.split(/\r?\n/,1)[0];
+  const delim=[',',';','\t'].map(d=>[d,first.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
     else if(c==='"')q=true;
     else if(c===delim){row.push(cur);cur=''}
-    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n')i++; row.push(cur);rows.push(row);row=[];cur='' }
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cur);rows.push(row);row=[];cur=''}
     else cur+=c;
   }
   if(cur!==''||row.length){row.push(cur);rows.push(row)}
-  return rows.filter(function(r){return r.some(function(x){return String(x).trim()!==''})});
+  return rows.filter(r=>r.some(x=>String(x).trim()!==''));
 }
-function tableToRows(m){
+async function fileToMatrix(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='csv'||ext==='txt'||ext==='tsv'){
+    const buf=await file.arrayBuffer();let text;
+    try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){text=new TextDecoder('windows-1255').decode(buf)}
+    return parseCSV(text);
+  }
+  if(!window.XLSX)throw new Error('לא ניתן לקרוא קבצי Excel כרגע. שמרו את הקובץ כ־CSV ונסו שוב.');
+  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+  return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});
+}
+const normHdr=h=>String(h==null?'':h).trim().toLowerCase().replace(/["'״׳_\-.]/g,' ').replace(/\s+/g,' ').trim();
+
+function parseEmployees(m){
   if(!m||m.length<2)throw new Error('הקובץ ריק או שיש בו רק שורת כותרות.');
-  var hdr=m[0].map(function(h){return String(h==null?'':h).trim()});
-  function norm(h){return h.toLowerCase().replace(/["'״׳_\-]/g,' ').replace(/\s+/g,' ').trim()}
-  var map={},taskCols=[],used={};
-  hdr.forEach(function(h,i){
-    var s=norm(h); if(!s)return;
-    var f=null;
-    if(/פתיח|opening|opened|job open/.test(s))f='opened';
+  const hdr=m[0].map(h=>String(h==null?'':h).trim());
+  const map={},taskCols=[],used={};
+  hdr.forEach((h,i)=>{
+    const s=normHdr(h);if(!s)return;
+    let f=null;
+    if(/זהות|^ת ?ז( |$)|^id$|identity|national id/.test(s))f='id';
+    else if(/פתיח|opening|opened|job open/.test(s))f='opened';
     else if(/עזיב|עזב|סיום העסק|departure|termination|leaving|exit/.test(s))f='left';
     else if(/תחיל|התחל|start/.test(s))f='start';
     else{
-      var t=TASKS.filter(function(t){return t.keys.some(function(k){return s.indexOf(k)>-1})})[0];
+      const t=TASKS.find(t=>t.keys.some(k=>s.includes(k)));
       if(t){taskCols.push({id:t.id,label:t.label,col:i});used[i]=1;return}
       if(/מחלק|department|dept/.test(s))f='dept';
       else if(/תפקיד|role|position|job title|title/.test(s))f='role';
       else if(/^שם|name/.test(s))f='name';
     }
-    if(f&&map[f]==null){map[f]=i;used[f+'']=1;used[i]=1}
+    if(f&&map[f]==null){map[f]=i;used[i]=1}
   });
-  if(map.name==null||map.start==null){
-    throw new Error('לא זוהו עמודות חובה ('+(map.name==null?'שם':'')+(map.name==null&&map.start==null?', ':'')+(map.start==null?'תאריך תחילת עבודה':'')+'). העמודות שנמצאו בקובץ: '+hdr.filter(Boolean).join(', ')+'.');
-  }
-  taskCols.sort(function(a,b){return TASKS.findIndex(function(t){return t.id===a.id})-TASKS.findIndex(function(t){return t.id===b.id})});
-  /* extra columns that look like a status list become extra tasks */
-  hdr.forEach(function(h,i){
+  const missing=[];if(map.id==null)missing.push('מספר זהות');if(map.name==null)missing.push('שם');if(map.start==null)missing.push('תאריך תחילת עבודה');
+  if(missing.length)throw new Error('לא זוהו עמודות חובה: '+missing.join(', ')+'. העמודות שנמצאו בקובץ: '+hdr.filter(Boolean).join(', ')+'.');
+  taskCols.sort((a,b)=>TASKS.findIndex(t=>t.id===a.id)-TASKS.findIndex(t=>t.id===b.id));
+  hdr.forEach((h,i)=>{
     if(!h||used[i])return;
-    var vals=m.slice(1).map(function(r){return r[i]}).filter(function(v){return v!==''&&v!=null});
+    const vals=m.slice(1).map(r=>r[i]).filter(v=>v!==''&&v!=null);
     if(vals.length&&vals.filter(statusKnown).length/vals.length>=.7)taskCols.push({id:'x'+i,label:h,col:i});
   });
-  var rows=[],skipped=0;
-  m.slice(1).forEach(function(r){
-    var name=String(r[map.name]==null?'':r[map.name]).trim(), start=parseDate(r[map.start]);
-    if(!name&&!start)return;
-    if(!start){skipped++;return}
-    var tasks={}; taskCols.forEach(function(t){tasks[t.id]=normStatus(r[t.col])});
-    rows.push({
-      name:name||'ללא שם',
-      dept:map.dept!=null&&String(r[map.dept]).trim()?String(r[map.dept]).trim():'לא צוין',
-      role:map.role!=null&&String(r[map.role]).trim()?String(r[map.role]).trim():'לא צוין',
-      opened:map.opened!=null?parseDate(r[map.opened]):null,
-      start:start,
-      left:map.left!=null?parseDate(r[map.left]):null,
-      tasks:tasks
-    });
+  const rows=[],seen=new Set();
+  const st={noId:0,noDate:0,dup:0,badId:0};
+  m.slice(1).forEach(r=>{
+    const name=String(r[map.name]==null?'':r[map.name]).trim(),id=normId(r[map.id]),start=parseDate(r[map.start]);
+    if(!name&&!id&&!start)return;
+    if(!id){st.noId++;return}
+    if(!start){st.noDate++;return}
+    if(seen.has(id)){st.dup++;return}
+    seen.add(id);
+    const bad=!idOk(id);if(bad)st.badId++;
+    const tasks={};taskCols.forEach(t=>{tasks[t.id]=normStatus(r[t.col])});
+    const cell=k=>map[k]!=null&&String(r[map[k]]).trim()?String(r[map[k]]).trim():'לא צוין';
+    rows.push({id,idBad:bad,name:name||'ללא שם',dept:cell('dept'),role:cell('role'),opened:map.opened!=null?parseDate(r[map.opened]):null,start,left:map.left!=null?parseDate(r[map.left]):null,tasks});
   });
-  if(!rows.length)throw new Error('לא נמצאו שורות עם תאריך תחילת עבודה תקין. התאריכים צריכים להיות בפורמט כמו 21/09/2026.');
-  return{rows:rows,tasks:taskCols.map(function(t){return{id:t.id,label:t.label}}),skipped:skipped,mapped:{dept:map.dept!=null,role:map.role!=null,opened:map.opened!=null,left:map.left!=null}};
+  if(!rows.length)throw new Error('לא נמצאו שורות תקינות (מספר זהות ותאריך תחילת עבודה). התאריכים צריכים להיות בפורמט כמו 21/09/2026.');
+  return{rows,tasks:taskCols.map(t=>({id:t.id,label:t.label})),stats:st,mapped:{dept:map.dept!=null,role:map.role!=null,opened:map.opened!=null,left:map.left!=null}};
 }
-async function readFile(file){
-  var ext=file.name.split('.').pop().toLowerCase(),matrix;
-  if(ext==='csv'||ext==='txt'||ext==='tsv'){
-    var buf=await file.arrayBuffer(),text;
-    try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){text=new TextDecoder('windows-1255').decode(buf)}
-    matrix=parseCSV(text);
-  }else{
-    if(!window.XLSX)throw new Error('לא ניתן לקרוא קבצי Excel כרגע. שמרו את הקובץ כ־CSV ונסו שוב.');
-    var wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
-    matrix=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});
-  }
-  return tableToRows(matrix);
+function timeMin(v){
+  if(v==null||v==='')return null;
+  if(typeof v==='number')return v>=0&&v<1?Math.round(v*1440):null;
+  const m=/^(\d{1,2}):(\d{2})/.exec(String(v).trim());return m?(+m[1])*60+(+m[2]):null;
+}
+function hoursOf(v){
+  if(v==null||v==='')return null;
+  if(typeof v==='number')return v>0&&v<1?v*24:v;
+  const s=String(v).trim(),m=/^(\d{1,2}):(\d{2})/.exec(s);
+  if(m)return(+m[1])+(+m[2])/60;
+  const n=parseFloat(s.replace(',','.'));return isNaN(n)?null:n;
+}
+function parseAttendance(m){
+  if(!m||m.length<2)throw new Error('קובץ הנוכחות ריק או שיש בו רק שורת כותרות.');
+  const hdr=m[0].map(h=>String(h==null?'':h).trim()),map={};
+  hdr.forEach((h,i)=>{
+    const s=normHdr(h);if(!s)return;let f=null;
+    if(/זהות|^ת ?ז( |$)|^id$|identity/.test(s))f='id';
+    else if(/תאריך|date/.test(s))f='date';
+    else if(/כניסה|check in|^in$|time in/.test(s))f='tin';
+    else if(/יציאה|check out|^out$|time out/.test(s))f='tout';
+    else if(/שעות|hours|total/.test(s))f='hours';
+    else if(/סוג|type|סטטוס|status/.test(s))f='type';
+    if(f&&map[f]==null)map[f]=i;
+  });
+  const missing=[];if(map.id==null)missing.push('מספר זהות');if(map.date==null)missing.push('תאריך');if(map.hours==null&&(map.tin==null||map.tout==null))missing.push('שעות (או כניסה ויציאה)');
+  if(missing.length)throw new Error('בקובץ הנוכחות לא זוהו עמודות חובה: '+missing.join(', ')+'. העמודות שנמצאו: '+hdr.filter(Boolean).join(', ')+'.');
+  const att=new Map();let rows=0,skipped=0,badId=0;
+  m.slice(1).forEach(r=>{
+    const id=normId(r[map.id]),t=parseDate(r[map.date]);
+    if(!id||t==null){skipped++;return}
+    let h=null;
+    if(map.hours!=null)h=hoursOf(r[map.hours]);
+    else{const a=timeMin(r[map.tin]),b=timeMin(r[map.tout]);if(a!=null&&b!=null){let d=b-a;if(d<0)d+=1440;h=d/60}}
+    const type=map.type!=null?String(r[map.type]==null?'':r[map.type]).trim():'';
+    if(h==null&&!type){skipped++;return}
+    if(!idOk(id))badId++;
+    addAtt(att,id,t,h||0,type);rows++;
+  });
+  if(!rows)throw new Error('לא נמצאו שורות נוכחות תקינות (מספר זהות, תאריך ושעות).');
+  return{att,rows,skipped,badId,employees:att.size};
+}
+function addAtt(att,id,t,h,type){
+  let m=att.get(id);if(!m){m=new Map();att.set(id,m)}
+  const v=m.get(t);
+  if(v){v.h+=h;if(!v.type&&type)v.type=type}else m.set(t,{h,type});
+}
+const _kind=new Map();
+function typeKind(type){
+  let k=_kind.get(type);if(k)return k;
+  const s=String(type||'').toLowerCase();
+  k=!s||/עבודה|work/.test(s)?'work':/חופש|vac/.test(s)?'vac':/מחל|sick/.test(s)?'sick':/מילואים|reserve/.test(s)?'res':/חג|holiday/.test(s)?'hol':'other';
+  _kind.set(type,k);return k;
 }
 
-/* ---------- sample data (built relative to today) ---------- */
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+/* ---------- sample data (fictional, built relative to today) ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function makeSample(){
-  var rnd=mulberry32(4172026);
-  var first=['נועה','איתי','מיכל','עומר','שירה','יונתן','תמר','דניאל','ליאור','רוני','אורי','הדס','גיא','מאיה','אריאל','נגה','עידו','ענת','רותם','שקד','יובל','דנה','אלון','מור','ניצן','סתיו','עדי','אביב','טל','לירון','גל','ספיר','אסף','קרן','נדב','שני','בן','מעיין','רון','יעל'];
-  var last=['כהן','לוי','מזרחי','פרידמן','אברהם','ביטון','דהן','שפירא','אזולאי','גולן','חיים','קפלן','אדרי','רוזן','שמעוני','בן דוד','אשכנזי','נחום','סגל','וייס'];
-  var depts=[['פיתוח',['מפתח/ת Full Stack','מפתח/ת Backend','מהנדס/ת QA','מהנדס/ת DevOps'],6],['מכירות',['נציג/ת מכירות','מנהל/ת לקוחות'],6],['שירות לקוחות',['נציג/ת שירות','ראש/ת צוות תמיכה'],7],['כספים',['מנהל/ת חשבונות','אנליסט/ית כספים'],2],['שיווק',['מנהל/ת קמפיינים','מנהל/ת תוכן'],3],['תפעול',['מתאם/ת תפעול','מנהל/ת לוגיסטיקה'],4],['משאבי אנוש',['מגייס/ת','מנהל/ת שכר'],2]];
-  var totalW=depts.reduce(function(s,d){return s+d[2]},0);
-  var perMonth=[6,5,4,5,4,4,4,4],T={contract:3,f101:5,equipment:8,access:10,training:24};
-  var curStart=keyToT(CUR),todayDom=new Date(TODAY).getUTCDate(),rows=[],i=0;
-  perMonth.forEach(function(cnt,mb){
-    for(var k=0;k<cnt;k++,i++){
-      var w=rnd()*totalW,d=depts[0];
-      for(var j=0;j<depts.length;j++){w-=depts[j][2];if(w<=0){d=depts[j];break}}
-      var dom=1+Math.floor(rnd()*26); if(mb===0)dom=Math.min(dom,todayDom);
-      var st=addMonths(curStart,-mb)+(dom-1)*DAY, wd=new Date(st).getUTCDay();
-      if(wd>=5){ st = mb>0 ? st+(7-wd)*DAY : st-(wd-4)*DAY }
-      var age=Math.max(0,(TODAY-st)/DAY),tasks={};
-      Object.keys(T).forEach(function(id){var need=T[id]*(.7+rnd()*.9);tasks[id]=age>=need?'done':age>=need*.35?'prog':'todo'});
-      if(age>30&&rnd()<.08){tasks[rnd()<.5?'training':'f101']=rnd()<.5?'prog':'todo'}
-      var left=null;
-      if(mb>=1&&rnd()<.24){var l=st+(25+Math.floor(rnd()*150))*DAY;if(l<TODAY)left=l}
-      rows.push({name:first[i%first.length]+' '+last[(i*7+3)%last.length],dept:d[0],role:d[1][Math.floor(rnd()*d[1].length)],opened:st-(25+Math.floor(rnd()*55))*DAY,start:st,left:left,tasks:tasks});
+  const rnd=mulberry32(4172026);
+  const first=['נועה','איתי','מיכל','עומר','שירה','יונתן','תמר','דניאל','ליאור','רוני','אורי','הדס','גיא','מאיה','אריאל','נגה','עידו','ענת','רותם','שקד','יובל','דנה','אלון','מור','ניצן','סתיו','עדי','אביב','טל','לירון','גל','ספיר','אסף','קרן','נדב','שני','בן','מעיין','רון','יעל','אורן','חן','שגיא','מיטל','אסתר','נתן','רינת'];
+  const last=['כהן','לוי','מזרחי','פרידמן','אברהם','ביטון','דהן','שפירא','אזולאי','גולן','חיים','קפלן','אדרי','רוזן','שמעוני','בן דוד','אשכנזי','נחום','סגל','וייס'];
+  const depts=[['פיתוח',['מפתח/ת Full Stack','מפתח/ת Backend','מהנדס/ת QA','מהנדס/ת DevOps'],6],['מכירות',['נציג/ת מכירות','מנהל/ת לקוחות'],6],['שירות לקוחות',['נציג/ת שירות','ראש/ת צוות תמיכה'],7],['כספים',['מנהל/ת חשבונות','אנליסט/ית כספים'],2],['שיווק',['מנהל/ת קמפיינים','מנהל/ת תוכן'],3],['תפעול',['מתאם/ת תפעול','מנהל/ת לוגיסטיקה'],4],['משאבי אנוש',['מגייס/ת','מנהל/ת שכר'],2]];
+  const totalW=depts.reduce((s,d)=>s+d[2],0);
+  const perMonth=[6,5,4,5,4,4,4,4,3,3,3,2],T={contract:3,f101:5,equipment:8,access:10,training:24};
+  const curStart=keyToT(CUR),todayDom=new Date(TODAY).getUTCDate(),rows=[],att=new Map();
+  let i=0;
+  perMonth.forEach((cnt,mb)=>{
+    for(let k=0;k<cnt;k++,i++){
+      let w=rnd()*totalW,d=depts[0];
+      for(const x of depts){w-=x[2];if(w<=0){d=x;break}}
+      let dom=1+Math.floor(rnd()*26);if(mb===0)dom=Math.min(dom,todayDom);
+      let st=addMonths(curStart,-mb)+(dom-1)*DAY;const wd=new Date(st).getUTCDay();
+      if(wd>=5)st=mb>0?st+(7-wd)*DAY:st-(wd-4)*DAY;
+      const age=Math.max(0,(TODAY-st)/DAY),tasks={};
+      Object.keys(T).forEach(id=>{const need=T[id]*(.7+rnd()*.9);tasks[id]=age>=need?'done':age>=need*.35?'prog':'todo'});
+      if(age>10&&rnd()<.13)tasks[['f101','equipment','access','training'][Math.floor(rnd()*4)]]=rnd()<.5?'prog':'todo';
+      let left=null;
+      if(mb>=1&&rnd()<.24){const l=st+(25+Math.floor(rnd()*150))*DAY;if(l<TODAY)left=l}
+      const id=makeId('000'+String(10000+Math.floor(rnd()*89999)));
+      rows.push({id,idBad:false,name:first[i%first.length]+' '+last[(i*7+3)%last.length],dept:d[0],role:d[1][Math.floor(rnd()*d[1].length)],opened:st-(25+Math.floor(rnd()*55))*DAY,start:st,left,tasks});
+      const end=Math.min(TODAY,left!=null?left-DAY:TODAY);
+      for(let t=st;t<=end;t+=DAY){
+        if(new Date(t).getUTCDay()>4)continue;
+        const x=rnd();
+        if(x<.06)addAtt(att,id,t,0,'חופשה');else if(x<.09)addAtt(att,id,t,0,'מחלה');
+        else addAtt(att,id,t,Math.round((7.5+rnd()*2)*4)/4,'עבודה');
+      }
     }
   });
-  return{rows:rows,tasks:TASKS.map(function(t){return{id:t.id,label:t.label}}),source:{sample:true,name:'נתוני דוגמה'}};
+  return{rows,tasks:TASKS.map(t=>({id:t.id,label:t.label})),att};
 }
 
 /* ---------- state ---------- */
-var state={rows:[],tasks:[],source:{sample:true,name:'נתוני דוגמה'},month:CUR,scope:'month',prob:3,week:'sun',hpd:8.4};
-function load(){
-  try{
-    var raw=localStorage.getItem(LS_KEY);
-    if(raw){var s=JSON.parse(raw);if(s&&s.rows&&s.rows.length&&s.tasks){state.rows=s.rows;state.tasks=s.tasks;state.source=s.source;return true}}
-  }catch(e){}
-  return false;
+const state={emps:[],tasks:[],att:null,src:{kind:'sample',name:'נתוני דוגמה',updated:TODAY},attSrc:null,from:0,to:0,preset:'month',depts:null,week:'sun',checks:{unmatched:[],outside:0}};
+const ICON={
+  done:'<svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="var(--blue)"/><path d="M7.4 13.4l3.6 3.6 7.6-7.8" stroke="var(--on-blue)" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  prog:'<svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="10.5" fill="none" stroke="var(--blue)" stroke-width="2.6"/><path d="M13 2.5a10.5 10.5 0 0 1 0 21z" fill="var(--blue)"/></svg>',
+  todo:'<svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="10.5" fill="none" stroke="var(--line2)" stroke-width="2.6"/></svg>',
+  warn:'<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M13 2.6 24.4 22.4H1.6z" fill="var(--orange-mark)" stroke="var(--orange-mark)" stroke-width="2" stroke-linejoin="round"/><path d="M13 9.6v6.2" stroke="var(--on-orange)" stroke-width="2.6" stroke-linecap="round"/><circle cx="13" cy="19.2" r="1.5" fill="var(--on-orange)"/></svg>'
+};
+const WARN_SM=ICON.warn;
+const WARN_INL=ICON.warn.replace('<svg','<svg width="16" height="16" style="vertical-align:-2px;margin-inline-end:4px"');
+const DONE_SM=ICON.done.replace('<svg','<svg width="20" height="20"');
+
+function prep(){state.emps.forEach(r=>{r.leftEff=(r.left!=null&&r.left<=TODAY)?r.left:null;r.started=r.start<=TODAY})}
+function recomputeChecks(){
+  const c={unmatched:[],outside:0};
+  if(state.att){
+    const byId=new Map(state.emps.map(r=>[r.id,r]));
+    state.att.forEach((m,id)=>{
+      const r=byId.get(id);
+      if(!r){c.unmatched.push(id);return}
+      const left=r.left!=null&&r.left<=TODAY?r.left:null;
+      m.forEach((v,t)=>{if(t<r.start||(left!=null&&t>left))c.outside++});
+    });
+  }
+  state.checks=c;
 }
-function save(){try{localStorage.setItem(LS_KEY,JSON.stringify({rows:state.rows,tasks:state.tasks,source:state.source}))}catch(e){}}
-function useSample(){var s=makeSample();state.rows=s.rows;state.tasks=s.tasks;state.source=s.source}
-function prep(){state.rows.forEach(function(r){r.leftEff=(r.left!=null&&r.left<=TODAY)?r.left:null;r.started=r.start<=TODAY})}
-function pickMonth(){
-  var keys=state.rows.map(function(r){return monthKey(r.start)});
-  if(keys.indexOf(CUR)>-1)return CUR;
-  return keys.filter(function(k){return k<=CUR}).sort().pop()||keys.sort().pop()||CUR;
+const inDept=r=>!state.depts||state.depts.has(r.dept);
+const inRange=r=>r.start>=state.from&&r.start<=state.to;
+const cohort=()=>state.emps.filter(r=>inDept(r)&&inRange(r));
+const rangeLabel=()=>fmtDate(state.from)+' עד '+fmtDate(state.to);
+const thrOf=t=>THR[t.id]!=null?THR[t.id]:THR_DEFAULT;
+function excOf(r,t){
+  if(r.leftEff!=null||!r.started||r.tasks[t.id]==='done')return 0;
+  const age=Math.round((TODAY-r.start)/DAY);
+  return age>thrOf(t)?age:0;
+}
+
+/* ---------- calculations ---------- */
+function tallyBy(arr,fn){
+  const m={};arr.forEach(r=>{const k=fn(r);m[k]=(m[k]||0)+1});
+  return Object.keys(m).map(k=>[k,m[k]]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'he'));
+}
+function calcOnb(F){
+  const T=state.tasks,pool=F.filter(r=>r.leftEff==null);
+  const isFull=r=>T.every(t=>r.tasks[t.id]==='done');
+  const perTask=T.map(t=>{const c={done:0,prog:0,todo:0,exc:0};pool.forEach(r=>{c[r.tasks[t.id]]++;if(excOf(r,t))c.exc++});return{t,c}});
+  const open=pool.filter(r=>!isFull(r)).map(r=>({r,exc:T.filter(t=>excOf(r,t)).length,miss:T.filter(t=>r.tasks[t.id]!=='done').length})).sort((a,b)=>b.exc-a.exc||a.r.start-b.r.start);
+  return{T,pool,full:pool.length-open.length,perTask,open,excTasks:perTask.reduce((s,x)=>s+x.c.exc,0),excPeople:open.filter(o=>o.exc>0).length};
+}
+function probStatus(r){const end=addMonths(r.start,6);if(r.leftEff!=null&&r.leftEff<end)return'out';return TODAY>=end?'passed':'in'}
+function calcProb(F){
+  const pop=F.filter(r=>r.started),c={passed:0,in:0,out:0};
+  pop.forEach(r=>{r._p=probStatus(r);c[r._p]++});
+  const soon=pop.filter(r=>r._p==='in'&&addMonths(r.start,6)-TODAY<=30*DAY).map(r=>({r,end:addMonths(r.start,6),days:Math.round((addMonths(r.start,6)-TODAY)/DAY)})).sort((a,b)=>a.end-b.end);
+  const ended=pop.filter(r=>r._p==='out').map(r=>({r,days:Math.round((r.leftEff-r.start)/DAY)})).sort((a,b)=>b.r.leftEff-a.r.leftEff);
+  const byDept=tallyBy(pop,r=>r.dept).map(([d,n])=>{const g={passed:0,in:0,out:0};pop.forEach(r=>{if(r.dept===d)g[r._p]++});return{d,n,g}});
+  return{pop,c,soon,ended,byDept};
+}
+function workDays(a,b){
+  if(b<a)return 0;
+  const lo=state.week==='sun'?0:1,hi=state.week==='sun'?4:5;let n=0;
+  for(let t=a;t<=b;t+=DAY){const w=new Date(t).getUTCDay();if(w>=lo&&w<=hi)n++}
+  return n;
+}
+function calcHalf(F){
+  const pop=F.filter(r=>r.started);
+  const data=pop.map(r=>{
+    const end6=addMonths(r.start,6)-DAY,we=Math.min(end6,r.leftEff!=null?r.leftEff:Infinity,TODAY);
+    const pot=workDays(r.start,end6),m=state.att?state.att.get(r.id):null,left=r.leftEff!=null&&r.leftEff<=end6;
+    const done=TODAY>end6&&!left;
+    if(!m)return{r,noAtt:true,pot,left,done};
+    let work=0,hours=0,abs=0;
+    m.forEach((v,t)=>{
+      if(t<r.start||t>we)return;
+      const k=typeKind(v.type);
+      if(v.h>0&&(k==='work'||k==='other')){work++;hours+=v.h}else if(k!=='work')abs++;
+    });
+    return{r,work,hours,abs,pot,left,done,noAtt:false};
+  }).sort((a,b)=>b.r.start-a.r.start);
+  const w=data.filter(x=>!x.noAtt);
+  const totD=w.reduce((s,x)=>s+x.work,0),totH=w.reduce((s,x)=>s+x.hours,0);
+  return{data,withAtt:w.length,noAtt:data.length-w.length,totD,totH,avgD:w.length?totD/w.length:0,avgH:w.length?totH/w.length:0,full:data.filter(x=>x.done).length,leftEarly:data.filter(x=>x.left).length,hasAbs:w.some(x=>x.abs>0)};
 }
 
 /* ---------- small components ---------- */
-function tally(arr,fn){
-  var m={};arr.forEach(function(r){var k=fn(r);m[k]=(m[k]||0)+1});
-  return Object.keys(m).map(function(k){return[k,m[k]]}).sort(function(a,b){return b[1]-a[1]||a[0].localeCompare(b[0],'he')});
-}
 function barList(items,unit){
-  if(!items.length)return'<div class="empty">אין נתונים לחודש הזה.</div>';
-  var max=Math.max.apply(null,items.map(function(x){return x[1]}));
-  return'<div class="bl">'+items.map(function(x){
-    var w=(x[1]/max*100).toFixed(1);
-    return'<div class="bl-r" data-tip="'+esc(x[0])+': '+x[1]+' '+unit+'"><span class="bl-l">'+esc(x[0])+'</span><div class="bl-t"><div class="bl-f" style="width:calc((100% - 30px) * '+(w/100)+')"></div><span class="bl-v">'+x[1]+'</span></div></div>';
-  }).join('')+'</div>';
+  if(!items.length)return'<div class="empty">אין נתונים בתקופה שנבחרה.</div>';
+  const max=Math.max.apply(null,items.map(x=>x[1]));
+  return'<div class="bl">'+items.map(x=>'<div class="bl-r" data-tip="'+esc(x[0])+': '+x[1]+' '+unit+'"><span class="bl-l">'+esc(x[0])+'</span><div class="bl-t"><div class="bl-f" style="width:calc((100% - 36px) * '+(x[1]/max).toFixed(3)+')"></div><span class="bl-v">'+x[1]+'</span></div></div>').join('')+'</div>';
 }
 function stack(segs){
-  var tot=segs.reduce(function(s,x){return s+x.n},0);
-  return'<div class="stk" role="img" aria-label="'+esc(segs.map(function(x){return x.label+' '+x.n}).join(', '))+'">'+segs.filter(function(x){return x.n>0}).map(function(x){
-    return'<i class="'+x.cls+'" style="flex:'+x.n+' 1 0" data-tip="'+esc(x.label)+': '+x.n+' ('+pct(x.n,tot)+'%)"></i>';
-  }).join('')+'</div>';
+  const tot=segs.reduce((s,x)=>s+x.n,0);
+  return'<div class="stk" role="img" aria-label="'+esc(segs.map(x=>x.label+' '+x.n).join(', '))+'">'+segs.filter(x=>x.n>0).map(x=>'<i class="'+x.cls+'" style="flex:'+x.n+' 1 0" data-tip="'+esc(x.label)+': '+x.n+' ('+pct(x.n,tot)+'%)"></i>').join('')+'</div>';
 }
-var ICON={
-  done:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="var(--done)"/><path d="M5.8 10.3l2.8 2.8 5.6-5.8" stroke="#fff" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  prog:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--done)" stroke-width="2"/><path d="M10 2a8 8 0 0 1 0 16z" fill="var(--done)"/></svg>',
-  todo:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--line2)" stroke-width="2"/></svg>'
-};
-function chip(s,label){var t=label+': '+ST[s];return'<span class="chip" role="img" aria-label="'+esc(t)+'" data-tip="'+esc(t)+'">'+ICON[s]+'</span>'}
-function legend(items){return'<div class="lg">'+items.map(function(x){return'<span><i class="'+x[0]+'"></i>'+esc(x[1])+'</span>'}).join('')+'</div>'}
-function cohortOf(k){return state.rows.filter(function(r){return monthKey(r.start)===k})}
+const legend=items=>'<div class="lg">'+items.map(x=>'<span><i class="'+x[0]+'"></i>'+esc(x[1])+'</span>').join('')+'</div>';
+function chip(s,label){const t=label+': '+ST[s];return'<span class="chip" role="img" aria-label="'+esc(t)+'" data-tip="'+esc(t)+'">'+ICON[s]+'</span>'}
+function excCell(r,t){
+  const age=excOf(r,t),tt=t.label+': '+ST[r.tasks[t.id]]+', פתוחה '+age+' ימים (הסף: '+thrOf(t)+' ימים)';
+  return'<span class="exc-c" role="img" aria-label="חריגה. '+esc(tt)+'" data-tip="'+esc(tt)+'">'+ICON.warn+'<span>'+age+' ימים</span></span>';
+}
+const exportBtn=(k,dis)=>'<button type="button" class="btn tertiary sm" data-act="export" data-sheets="'+k+'"'+(dis?' aria-disabled="true" data-tip="אין נתונים לייצוא"':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6.5 10.5 12 16l5.5-5.5M4 20h16"/></svg>ייצוא</button>';
+const emptyCohort=()=>'<div class="panel"><div class="empty">אין עובדים בתקופה ובמחלקות שנבחרו. אפשר להרחיב את התקופה.<br><button type="button" class="btn secondary" data-act="preset-all">הצג את כל התקופות</button></div></div>';
+const nameCell=r=>esc(r.name)+(r.idBad?'<span class="warnline">'+WARN_SM+'מספר זהות לא תקין</span>':'');
 
-/* ---------- section 1: this month ---------- */
-function renderMonth(){
-  var k=state.month,C=cohortOf(k),prevK=monthKey(addMonths(keyToT(k),-1)),prevN=cohortOf(prevK).length;
-  $('#sub-month').textContent='נקלטו ב'+monthLabel(k)+' לפי תאריך תחילת עבודה.';
-  var depts=tally(C,function(r){return r.dept}),roles=tally(C,function(r){return r.role});
-  if(roles.length>8){var rest=roles.slice(7).reduce(function(s,x){return s+x[1]},0);roles=roles.slice(0,7).concat([['תפקידים נוספים ('+(roles.length-7)+')',rest]])}
-  var ttfRows=C.filter(function(r){return r.opened!=null}),ttf=ttfRows.length?ttfRows.reduce(function(s,r){return s+(r.start-r.opened)/DAY},0)/ttfRows.length:null;
-  var act=C.filter(function(r){return!r.leftEff}),full=state.tasks.length?act.filter(function(r){return state.tasks.every(function(t){return r.tasks[t.id]==='done'})}).length:null;
-  var diff=C.length-prevN,dtxt=diff===0?'כמו ב'+monthName(prevK):(diff>0?'▲ '+diff+' יותר מ':'▼ '+(-diff)+' פחות מ')+monthName(prevK);
-  /* trend */
-  var keys=state.rows.map(function(r){return monthKey(r.start)}).sort(),lo=keys[0]<addKey(CUR,-11)?addKey(CUR,-11):keys[0],hi=keys[keys.length-1]>CUR?keys[keys.length-1]:CUR;
-  if(lo>k)lo=k; if(hi<k)hi=k;
-  var ms=[];for(var mk=lo;mk<=hi&&ms.length<36;mk=addKey(mk,1))ms.push(mk);
-  var counts=ms.map(function(m){return cohortOf(m).length}),mx=Math.max.apply(null,counts.concat([1]));
-  var cols='<div class="cols" role="group" aria-label="קליטות לפי חודש">'+ms.map(function(m,i){
-    var n=counts[i],h=Math.round(n/mx*112),show=(m===k||n===mx&&n>0);
-    return'<button type="button" class="col'+(m===k?' on':'')+'" data-month="'+m+'" aria-pressed="'+(m===k)+'" aria-label="'+esc(monthLabel(m))+': '+n+' עובדים" data-tip="'+esc(monthLabel(m))+': '+n+' עובדים"><span class="col-v">'+(show?n:'')+'</span><span class="col-b" style="height:'+h+'px"></span></button>';
-  }).join('')+'</div><div class="cols-l">'+ms.map(function(m){return'<span class="'+(m===k?'on':'')+'">'+esc(monthShort(m))+'</span>'}).join('')+'</div>';
-  $('#out-month').innerHTML=
+/* ---------- section 1: who joined ---------- */
+function renderJoin(F){
+  $('#sub-join').textContent='עובדים שתחילת העבודה שלהם בין '+rangeLabel()+'. '+(state.depts?'מסוננים לפי מחלקה.':'כל המחלקות.');
+  if(!F.length){$('#out-join').innerHTML=emptyCohort();return}
+  const len=state.to-state.from+DAY,pf=state.from-len,pt=state.from-DAY;
+  const prevN=state.preset==='all'?null:state.emps.filter(r=>inDept(r)&&r.start>=pf&&r.start<=pt).length;
+  const diff=prevN==null?null:F.length-prevN;
+  const cmp=diff==null?'':diff===0?'כמו בתקופה הקודמת באורך זהה':(diff>0?'▲ '+diff+' יותר':'▼ '+(-diff)+' פחות')+' מהתקופה הקודמת באורך זהה';
+  const depts=tally(F,'dept');let roles=tally(F,'role');
+  if(roles.length>8){const rest=roles.slice(7).reduce((s,x)=>s+x[1],0);roles=roles.slice(0,7).concat([['אחרים ('+(roles.length-7)+' תפקידים)',rest]])}
+  const tt=F.filter(r=>r.opened!=null),ttf=tt.length?tt.reduce((s,r)=>s+(r.start-r.opened)/DAY,0)/tt.length:null;
+  const act=F.filter(r=>r.leftEff==null),T=state.tasks,full=T.length?act.filter(r=>T.every(t=>r.tasks[t.id]==='done')).length:null;
+  /* month trend: department filter only */
+  const pool=state.emps.filter(inDept),keys=pool.map(r=>monthKey(r.start)).sort();
+  let lo=addKey(CUR,-11);if(keys.length&&keys[0]>lo)lo=keys[0];
+  let hi=CUR;if(keys.length&&keys[keys.length-1]>hi)hi=keys[keys.length-1];
+  const ms=[];for(let k=lo;k<=hi&&ms.length<36;k=addKey(k,1))ms.push(k);
+  const counts=ms.map(k=>pool.filter(r=>monthKey(r.start)===k).length),mx=Math.max.apply(null,counts.concat([1]));
+  const on=k=>{const s=keyToT(k);return s<=state.to&&endOfMonth(s)>=state.from};
+  const cols='<div class="cols" role="group" aria-label="קליטות לפי חודש">'+ms.map((k,i)=>{
+    const n=counts[i],h=Math.round(n/mx*130),tip=monthLabel(k)+': '+n+' עובדים';
+    return'<button type="button" class="col'+(on(k)?' on':'')+'" data-month="'+k+'" aria-pressed="'+on(k)+'" aria-label="'+esc(tip)+'" data-tip="'+esc(tip)+'"><span class="col-v">'+(on(k)||n===mx&&n>0?n:'')+'</span><span class="col-b" style="height:'+h+'px"></span></button>';
+  }).join('')+'</div><div class="cols-l">'+ms.map(k=>'<span class="'+(on(k)?'on':'')+'">'+esc(monthShort(k))+'</span>').join('')+'</div>';
+  $('#out-join').innerHTML=
    '<div class="kpis">'+
-    '<div class="kpi hero"><span class="l">עובדים חדשים ב'+esc(monthName(k))+'</span><span class="v">'+C.length+'</span><span class="s">'+esc(dtxt)+'</span></div>'+
-    '<div class="kpi"><span class="l">מחלקות שקלטו</span><span class="v">'+depts.length+'</span><span class="s">'+(depts.length?'מתוך '+tally(state.rows,function(r){return r.dept}).length+' מחלקות בנתונים':'אין קליטות בחודש הזה')+'</span></div>'+
+    '<div class="kpi hero"><span class="l">עובדים חדשים</span><span class="v">'+F.length+'</span><span class="s">'+esc(cmp||'ללא השוואה לתקופה קודמת')+'</span></div>'+
+    '<div class="kpi"><span class="l">מחלקות שקלטו</span><span class="v">'+depts.length+'</span><span class="s">מתוך '+tally(state.emps,'dept').length+' מחלקות בנתונים</span></div>'+
     '<div class="kpi"><span class="l">ימים מפתיחת משרה עד איוש</span><span class="v">'+(ttf==null?'—':num(ttf))+'</span><span class="s">'+(ttf==null?'אין תאריכי פתיחת משרה':'ממוצע, עד תחילת העבודה')+'</span></div>'+
-    '<div class="kpi"><span class="l">השלימו את כל משימות הקליטה</span><span class="v">'+(full==null?'—':act.length?pct(full,act.length)+'%':'—')+'</span>'+(full!=null&&act.length?'<span class="s">'+full+' מתוך '+act.length+' עובדים</span><div class="meter" aria-hidden="true"><i style="width:'+pct(full,act.length)+'%"></i></div>':'<span class="s">אין נתוני משימות</span>')+'</div>'+
+    '<div class="kpi"><span class="l">השלימו את כל הקליטה</span><span class="v">'+(full==null||!act.length?'—':pct(full,act.length)+'%')+'</span>'+(full!=null&&act.length?'<span class="s">'+full+' מתוך '+act.length+' עובדים</span><div class="meter" aria-hidden="true"><i style="width:'+pct(full,act.length)+'%"></i></div>':'<span class="s">אין נתוני משימות</span>')+'</div>'+
    '</div>'+
    '<div class="grid3">'+
-     '<div class="panel"><h3>קליטות לפי חודש</h3><p class="hint">לחיצה על עמודה מציגה את החודש</p>'+cols+'</div>'+
-     '<div class="panel"><h3>לפי מחלקה</h3>'+barList(depts,'עובדים')+'</div>'+
-     '<div class="panel"><h3>לפי תפקיד</h3>'+barList(roles,'עובדים')+'</div>'+
+    '<div class="panel"><div class="panel-h"><div><h3>קליטות לפי חודש</h3><p class="hint">לחיצה על עמודה מסננת לאותו חודש</p></div></div>'+cols+'</div>'+
+    '<div class="panel"><div class="panel-h"><h3>לפי מחלקה</h3></div>'+barList(depts,'עובדים')+'</div>'+
+    '<div class="panel"><div class="panel-h"><h3>לפי תפקיד</h3></div>'+barList(roles,'עובדים')+'</div>'+
    '</div>';
 }
-function addKey(k,n){return monthKey(addMonths(keyToT(k),n))}
+function tally(arr,key){return tallyBy(arr,r=>r[key])}
 
 /* ---------- section 2: onboarding ---------- */
-function renderOnb(){
-  var out=$('#out-onb'),T=state.tasks;
-  if(!T.length){out.innerHTML='<div class="panel"><div class="empty">לא זוהו בקובץ עמודות של משימות קליטה (חוזה, טופס 101, הדרכות, ציוד, הרשאות).</div></div>';return}
-  var pool=(state.scope==='month'?cohortOf(state.month):state.rows).filter(function(r){return!r.leftEff});
-  if(!pool.length){out.innerHTML='<div class="panel"><div class="empty">אין עובדים פעילים באוכלוסייה שנבחרה.</div></div>';return}
-  var isFull=function(r){return T.every(function(t){return r.tasks[t.id]==='done'})};
-  var full=pool.filter(isFull).length,open=pool.filter(function(r){return!isFull(r)}).sort(function(a,b){return a.start-b.start});
-  var rowsHtml=T.map(function(t){
-    var c={done:0,prog:0,todo:0};pool.forEach(function(r){c[r.tasks[t.id]]++});
-    return'<div class="trow"><span class="tl">'+esc(t.label)+'</span>'+stack([{cls:'s-done',label:ST.done,n:c.done},{cls:'s-prog',label:ST.prog,n:c.prog},{cls:'s-todo',label:ST.todo,n:c.todo}])+'<span class="tn">'+c.done+' מתוך '+pool.length+'</span></div>';
-  }).join('');
-  var head=state.scope==='month'?'נקלטו ב'+monthName(state.month):'כל העובדים הפעילים';
-  var table=open.length?
-   '<div class="tbl'+(open.length>9?' tall':'')+'"><table><thead><tr><th>עובד/ת</th><th>התחלה</th>'+T.map(function(t){return'<th class="c">'+esc(t.label)+'</th>'}).join('')+'<th class="c">חסרות</th></tr></thead><tbody>'+
-   open.map(function(r){
-     var miss=T.filter(function(t){return r.tasks[t.id]!=='done'}).length,age=Math.round((TODAY-r.start)/DAY);
-     return'<tr><td class="nm">'+esc(r.name)+'<span class="mut">'+esc(r.dept)+' · '+esc(r.role)+'</span></td><td>'+fmtDate(r.start)+'<span class="mut">'+(age>=0?'יום '+(age+1)+' בעבודה':'יתחיל בעוד '+(-age)+' ימים')+'</span></td>'+
-       T.map(function(t){return'<td class="c">'+chip(r.tasks[t.id],t.label)+'</td>'}).join('')+'<td class="c"><span class="miss">'+miss+'</span></td></tr>';
+function renderOnb(F){
+  const out=$('#out-onb');
+  if(!state.tasks.length){out.innerHTML='<div class="panel"><div class="empty">בקובץ לא זוהו עמודות של משימות קליטה (חוזה, טופס 101, הדרכות, ציוד, הרשאות).</div></div>';return}
+  if(!F.length){out.innerHTML=emptyCohort();return}
+  const d=calcOnb(F);
+  if(!d.pool.length){out.innerHTML='<div class="panel"><div class="empty">כל העובדים בתקופה שנבחרה כבר עזבו, ולכן אין תהליך קליטה להציג.</div></div>';return}
+  const exBadge=d.excTasks?'<span class="badge bad">'+WARN_SM+d.excTasks+' משימות בחריגה אצל '+d.excPeople+' עובדים</span>':'<span class="badge good">'+DONE_SM+'אין משימות בחריגה</span>';
+  const rows=d.perTask.map(x=>'<div class="trow"><span class="tl">'+esc(x.t.label)+'</span>'+stack([{cls:'s-done',label:ST.done,n:x.c.done},{cls:'s-prog',label:ST.prog,n:x.c.prog},{cls:'s-todo',label:ST.todo,n:x.c.todo}])+'<span class="tn">'+x.c.done+' מתוך '+d.pool.length+(x.c.exc?'<span class="ex">⚠ '+x.c.exc+' בחריגה</span>':'')+'</span></div>').join('');
+  const table=d.open.length?
+   '<div class="tbl'+(d.open.length>8?' tall':'')+'"><table><thead><tr><th class="nm">עובד/ת</th><th>התחלה</th>'+d.T.map(t=>'<th class="c">'+esc(t.label)+'</th>').join('')+'<th class="c">חסרות</th></tr></thead><tbody>'+
+   d.open.map(o=>{
+     const r=o.r,age=Math.round((TODAY-r.start)/DAY);
+     return'<tr'+(o.exc?' class="exc"':'')+'><td class="nm">'+nameCell(r)+'<span class="mut">'+esc(r.dept)+' · '+esc(r.role)+'</span></td><td>'+fmtDate(r.start)+'<span class="mut">'+(age>=0?'יום '+(age+1)+' בעבודה':'יתחיל בעוד '+(-age)+' ימים')+'</span></td>'+
+       d.T.map(t=>'<td class="c">'+(excOf(r,t)?excCell(r,t):chip(r.tasks[t.id],t.label))+'</td>').join('')+'<td class="c"><span class="miss'+(o.exc?' bad':'')+'">'+o.miss+'</span></td></tr>';
    }).join('')+'</tbody></table></div>':
-   '<div class="empty">כל '+pool.length+' העובדים השלימו את כל משימות הקליטה.</div>';
+   '<div class="empty">כל '+d.pool.length+' העובדים השלימו את כל משימות הקליטה.</div>';
   out.innerHTML=
-   '<div class="panel"><div class="onb-top"><div class="onb-big"><b>'+full+'</b>מתוך '+pool.length+' השלימו את כל המשימות ('+head+')</div>'+legend([['s-done',ST.done],['s-prog',ST.prog],['s-todo',ST.todo]])+'</div>'+rowsHtml+'</div>'+
-   '<div class="panel"><h3>מי עוד באמצע</h3><p class="hint">'+(open.length?open.length+' עובדים עם משימות פתוחות, מהוותיק לחדש. ':'')+'לפי המשימות שסומנו בטבלה.</p>'+table+'</div>';
+   '<div class="panel"><div class="onb-top"><div class="onb-big"><b>'+d.full+'</b>מתוך '+d.pool.length+' השלימו את כל המשימות</div>'+exBadge+'</div>'+
+   '<div style="margin-bottom:8px">'+legend([['s-done',ST.done],['s-prog',ST.prog],['s-todo',ST.todo]])+'</div>'+rows+'</div>'+
+   '<div class="panel"><div class="panel-h"><div><h3>מי עוד באמצע</h3><p class="hint">'+(d.open.length?d.open.length+' עובדים עם משימות פתוחות. קודם מי שיש לו חריגות, ואז הוותיק ביותר.':'')+'</p></div>'+exportBtn('onb',!d.open.length)+'</div>'+table+'</div>';
 }
 
 /* ---------- section 3: probation ---------- */
-function probStatus(r,P){var end=addMonths(r.start,P);if(r.leftEff!=null&&r.leftEff<end)return'out';return TODAY>=end?'passed':'in'}
-function renderProb(){
-  var P=state.prob,pop=state.rows.filter(function(r){return r.started}),out=$('#out-prob');
-  if(!pop.length){out.innerHTML='<div class="panel"><div class="empty">אין עדיין עובדים שהתחילו לעבוד.</div></div>';return}
-  var c={passed:0,in:0,out:0};pop.forEach(function(r){r._p=probStatus(r,P);c[r._p]++});
-  var concluded=c.passed+c.out;
-  var tiles='<div class="ptiles">'+
+function renderProb(F){
+  const out=$('#out-prob');
+  if(!F.length){out.innerHTML=emptyCohort();return}
+  const d=calcProb(F),c=d.c,pop=d.pop;
+  if(!pop.length){out.innerHTML='<div class="panel"><div class="empty">העובדים בתקופה שנבחרה עדיין לא התחילו לעבוד.</div></div>';return}
+  const concluded=c.passed+c.out;
+  const tiles='<div class="ptiles">'+
    '<div class="ptile"><span class="l"><i class="s-done"></i>עברו את תקופת הניסיון</span><span class="v">'+c.passed+'<small>'+pct(c.passed,pop.length)+'%</small></span><span class="s">'+(concluded?pct(c.passed,concluded)+'% מבין מי שסיימו את התקופה':'עדיין אף אחד לא סיים')+'</span></div>'+
-   '<div class="ptile"><span class="l"><i class="s-prog"></i>עדיין בתקופת ניסיון</span><span class="v">'+c.in+'<small>'+pct(c.in,pop.length)+'%</small></span><span class="s">'+pop.filter(function(r){return r._p==='in'&&addMonths(r.start,P)-TODAY<=30*DAY}).length+' מסיימים ב־30 הימים הקרובים</span></div>'+
-   '<div class="ptile"><span class="l"><i class="s-bad"></i>הסתיימו בלי המשך</span><span class="v">'+c.out+'<small>'+pct(c.out,pop.length)+'%</small></span><span class="s">עזבו לפני '+P+' חודשים</span></div>'+
+   '<div class="ptile"><span class="l"><i class="s-prog"></i>עדיין בתקופת ניסיון</span><span class="v">'+c.in+'<small>'+pct(c.in,pop.length)+'%</small></span><span class="s">'+d.soon.length+' מסיימים ב־30 הימים הקרובים</span></div>'+
+   '<div class="ptile"><span class="l"><i class="s-out"></i>הסתיימו בלי המשך</span><span class="v">'+c.out+'<small>'+pct(c.out,pop.length)+'%</small></span><span class="s">עזבו לפני 6 חודשים</span></div>'+
   '</div>';
-  var overall=stack([{cls:'s-done',label:'עברו',n:c.passed},{cls:'s-prog',label:'עדיין בתקופה',n:c.in},{cls:'s-bad',label:'הסתיימו בלי המשך',n:c.out}]);
-  var dep=tally(pop,function(r){return r.dept});
-  var depHtml=dep.map(function(d){
-    var g={passed:0,in:0,out:0};pop.forEach(function(r){if(r.dept===d[0])g[r._p]++});
-    return'<div class="dept-r"><span class="tl">'+esc(d[0])+'</span>'+stack([{cls:'s-done',label:'עברו',n:g.passed},{cls:'s-prog',label:'עדיין בתקופה',n:g.in},{cls:'s-bad',label:'הסתיימו בלי המשך',n:g.out}])+'<span class="tn">'+d[1]+' עובדים</span></div>';
-  }).join('');
-  var soon=pop.filter(function(r){return r._p==='in'&&addMonths(r.start,P)-TODAY<=30*DAY}).sort(function(a,b){return addMonths(a.start,P)-addMonths(b.start,P)});
-  var ended=pop.filter(function(r){return r._p==='out'}).sort(function(a,b){return b.leftEff-a.leftEff});
-  var soonHtml=soon.length?'<div class="list scroll">'+soon.map(function(r){var e=addMonths(r.start,P),d=Math.round((e-TODAY)/DAY);
-    return'<div class="list-r"><div><b>'+esc(r.name)+'</b><span class="mut">'+esc(r.dept)+' · '+esc(r.role)+'</span></div><div class="r">'+fmtDate(e)+'<span class="mut">'+(d<=0?'היום':'בעוד '+d+' ימים')+'</span></div></div>'}).join('')+'</div>':'<div class="empty">אף אחד לא מסיים תקופת ניסיון ב־30 הימים הקרובים.</div>';
-  var endedHtml=ended.length?'<div class="list scroll">'+ended.map(function(r){var d=Math.round((r.leftEff-r.start)/DAY);
-    return'<div class="list-r"><div><b>'+esc(r.name)+'</b><span class="mut">'+esc(r.dept)+' · '+esc(r.role)+'</span></div><div class="r bad-t">עזיבה ב־'+fmtDate(r.leftEff)+'<span class="mut">אחרי '+d+' ימים</span></div></div>'}).join('')+'</div>':'<div class="empty">אף עובד לא עזב בתקופת הניסיון.</div>';
+  const segs=g=>[{cls:'s-done',label:'עברו',n:g.passed},{cls:'s-prog',label:'עדיין בתקופה',n:g.in},{cls:'s-out',label:'הסתיימו בלי המשך',n:g.out}];
+  const depHtml=d.byDept.map(x=>'<div class="dept-r"><span class="tl">'+esc(x.d)+'</span>'+stack(segs(x.g))+'<span class="tn">'+x.n+' עובדים</span></div>').join('');
+  const soonHtml=d.soon.length?'<div class="list scroll">'+d.soon.map(x=>'<div class="list-r"><div><b>'+esc(x.r.name)+'</b><span class="mut">'+esc(x.r.dept)+' · '+esc(x.r.role)+'</span></div><div class="r">'+fmtDate(x.end)+'<span class="mut">'+(x.days<=0?'היום':'בעוד '+x.days+' ימים')+'</span></div></div>').join('')+'</div>':'<div class="empty">אף אחד לא מסיים תקופת ניסיון ב־30 הימים הקרובים.</div>';
+  const endHtml=d.ended.length?'<div class="list scroll">'+d.ended.map(x=>'<div class="list-r"><div><b>'+esc(x.r.name)+'</b><span class="mut">'+esc(x.r.dept)+' · '+esc(x.r.role)+'</span></div><div class="r out-t">'+WARN_INL+'עזיבה ב־'+fmtDate(x.r.leftEff)+'<span class="mut">אחרי '+x.days+' ימים</span></div></div>').join('')+'</div>':'<div class="empty">אף עובד לא עזב בתקופת הניסיון.</div>';
   out.innerHTML=tiles+
-   '<div class="panel"><h3>כל העובדים שהתחילו ('+pop.length+')</h3><p class="hint">&nbsp;</p>'+overall+'<div style="height:14px"></div><h3>לפי מחלקה</h3><p class="hint">מי סיים, מי עדיין בתקופה ואיפה עוזבים בלי המשך</p>'+depHtml+'</div>'+
-   '<div class="grid2"><div class="panel"><h3>מסיימים תקופת ניסיון בקרוב</h3><p class="hint">בעוד 30 ימים או פחות. זמן לשיחת סיכום.</p>'+soonHtml+'</div>'+
-   '<div class="panel"><h3>הסתיימו בלי המשך</h3><p class="hint">עזבו לפני שתקופת הניסיון הסתיימה.</p>'+endedHtml+'</div></div>';
+   '<div class="panel"><div class="panel-h"><div><h3>כל העובדים שהתחילו ('+pop.length+')</h3></div></div>'+stack(segs(c))+'<div style="margin-top:12px">'+legend([['s-done','עברו'],['s-prog','עדיין בתקופה'],['s-out','הסתיימו בלי המשך']])+'</div>'+
+   '<h3 style="margin:28px 0 4px">לפי מחלקה</h3><p class="hint" style="margin-bottom:8px">מי סיים, מי עדיין בתקופה, ואיפה עוזבים בלי המשך</p>'+depHtml+'</div>'+
+   '<div class="grid2"><div class="panel"><div class="panel-h"><div><h3>מסיימים תקופת ניסיון בקרוב</h3><p class="hint">בעוד 30 ימים או פחות. זמן לשיחת סיכום.</p></div>'+exportBtn('soon',!d.soon.length)+'</div>'+soonHtml+'</div>'+
+   '<div class="panel"><div class="panel-h"><div><h3>הסתיימו בלי המשך</h3><p class="hint">עזבו לפני שתקופת הניסיון הסתיימה.</p></div>'+exportBtn('out',!d.ended.length)+'</div>'+endHtml+'</div></div>';
 }
 
-/* ---------- section 4: first half-year ---------- */
-function countWork(a,b){
-  if(b<a)return 0;
-  var lo=state.week==='sun'?0:1,hi=state.week==='sun'?4:5,n=0;
-  for(var t=a;t<=b;t+=DAY){var w=new Date(t).getUTCDay();if(w>=lo&&w<=hi)n++}
-  return n;
-}
-function renderHalf(){
-  var out=$('#out-half'),pop=state.rows.filter(function(r){return r.started});
-  if(!pop.length){out.innerHTML='<div class="panel"><div class="empty">אין עדיין עובדים שהתחילו לעבוד.</div></div>';return}
-  var hpd=state.hpd;
-  var data=pop.map(function(r){
-    var end6=addMonths(r.start,6)-DAY,we=Math.min(end6,r.leftEff!=null?r.leftEff:Infinity,TODAY);
-    var w=countWork(r.start,we),pot=countWork(r.start,end6);
-    return{r:r,work:w,hours:w*hpd,pot:pot,end6:end6,left:r.leftEff!=null&&r.leftEff<=end6,done:TODAY>end6&&!(r.leftEff!=null&&r.leftEff<=end6)};
-  }).sort(function(a,b){return b.r.start-a.r.start});
-  var totD=data.reduce(function(s,x){return s+x.work},0),totH=totD*hpd,full=data.filter(function(x){return x.done}).length;
-  var kp='<div class="kpis">'+
-   '<div class="kpi"><span class="l">סך ימי עבודה</span><span class="v">'+num(totD)+'</span><span class="s">'+data.length+' עובדים בחצי השנה הראשונה שלהם</span></div>'+
-   '<div class="kpi"><span class="l">סך שעות עבודה (הערכה)</span><span class="v">'+num(totH)+'</span><span class="s">ימי עבודה × '+hpd+' שעות</span></div>'+
-   '<div class="kpi"><span class="l">ממוצע ימי עבודה לעובד</span><span class="v">'+num(totD/data.length)+'</span><span class="s">'+num(totH/data.length)+' שעות בממוצע</span></div>'+
-   '<div class="kpi"><span class="l">השלימו חצי שנה בעבודה</span><span class="v">'+full+'<small>מתוך '+data.length+'</small></span><span class="s">'+data.filter(function(x){return x.left}).length+' עזבו לפני חצי שנה</span></div>'+
+/* ---------- section 4: first half-year, from attendance ---------- */
+function renderHalf(F){
+  const out=$('#out-half');
+  if(!F.length){out.innerHTML=emptyCohort();return}
+  if(!F.some(r=>r.started)){out.innerHTML='<div class="panel"><div class="empty">העובדים בתקופה שנבחרה עדיין לא התחילו לעבוד.</div></div>';return}
+  if(!state.att){
+    out.innerHTML='<div class="panel"><div class="empty"><b>יש לטעון קובץ נוכחות.</b> הימים והשעות מחושבים רק מנתוני נוכחות אמיתיים, ולא מהערכה.<br><button type="button" class="btn secondary" data-act="load-att">טעינת קובץ נוכחות</button></div></div>';
+    return;
+  }
+  const d=calcHalf(F);
+  const kp='<div class="kpis">'+
+   '<div class="kpi"><span class="l">סך ימי עבודה</span><span class="v">'+num(d.totD)+'</span><span class="s">'+d.withAtt+' עובדים עם נתוני נוכחות</span></div>'+
+   '<div class="kpi"><span class="l">סך שעות עבודה</span><span class="v">'+num(d.totH)+'</span><span class="s">לפי דיווח הנוכחות</span></div>'+
+   '<div class="kpi"><span class="l">ממוצע ימי עבודה לעובד</span><span class="v">'+num1(d.avgD)+'</span><span class="s">'+num(d.avgH)+' שעות בממוצע</span></div>'+
+   '<div class="kpi"><span class="l">השלימו חצי שנה בעבודה</span><span class="v">'+d.full+'</span><span class="s">מתוך '+d.data.length+' · '+d.leftEarly+' עזבו לפני חצי שנה</span></div>'+
   '</div>';
-  var body=data.map(function(x){
-    var r=x.r,w=x.pot?Math.min(100,x.work/x.pot*100):0,status;
-    if(x.left)status='<span class="bad-t">עזב/ה אחרי '+Math.round((r.leftEff-r.start)/DAY)+' ימים</span>';
+  const body=d.data.map(x=>{
+    const r=x.r;let status;
+    if(x.left)status='<span class="out-t">'+WARN_INL+'עזב/ה אחרי '+Math.round((r.leftEff-r.start)/DAY)+' ימים</span>';
     else if(x.done)status='<span class="ok-t">השלים/ה חצי שנה</span>';
-    else status='<span class="ok-t">בחצי השנה הראשונה, עוד '+Math.max(0,x.pot-x.work)+' ימי עבודה</span>';
-    return'<tr><td class="nm">'+esc(r.name)+'<span class="mut">'+esc(r.dept)+'</span></td><td>'+fmtDate(r.start)+'</td>'+
-     '<td><div class="mini" data-tip="'+esc(r.name)+': '+x.work+' ימי עבודה מתוך '+x.pot+' בחצי שנה"><div class="tr"><i class="'+(x.left?'bad':'')+'" style="width:'+w.toFixed(1)+'%"></i></div><span>'+x.work+' מתוך '+x.pot+'</span></div></td>'+
-     '<td>'+num(x.hours)+'</td><td>'+status+'</td></tr>';
+    else status='<span class="ok-t">בחצי השנה הראשונה</span>';
+    if(x.noAtt)return'<tr><td class="nm">'+nameCell(r)+'<span class="mut">'+esc(r.dept)+'</span></td><td>'+fmtDate(r.start)+'</td><td colspan="'+(d.hasAbs?4:3)+'"><span class="warnline" style="font-size:16px">'+WARN_SM+'אין נתוני נוכחות</span></td><td>'+status+'</td></tr>';
+    const w=x.pot?Math.min(100,x.work/x.pot*100):0;
+    return'<tr><td class="nm">'+nameCell(r)+'<span class="mut">'+esc(r.dept)+'</span></td><td>'+fmtDate(r.start)+'</td>'+
+     '<td><div class="mini" data-tip="'+esc(r.name)+': '+x.work+' ימי עבודה מתוך '+x.pot+' אפשריים בחצי שנה"><div class="tr"><i style="width:'+w.toFixed(1)+'%"></i></div><span>'+x.work+' מתוך '+x.pot+'</span></div></td>'+
+     '<td>'+num(x.hours)+'</td>'+(d.hasAbs?'<td>'+x.abs+'</td>':'')+'<td>'+status+'</td></tr>';
   }).join('');
-  out.innerHTML=kp+'<div class="panel"><h3>לפי עובד</h3><p class="hint">הפס מראה כמה מימי העבודה האפשריים בחצי השנה הראשונה כבר הושלמו. הפס האדום: עזיבה לפני שהסתיימה חצי שנה.</p>'+
-   '<div class="tbl tall"><table><thead><tr><th>עובד/ת</th><th>התחלה</th><th>ימי עבודה</th><th>שעות (הערכה)</th><th>מצב</th></tr></thead><tbody>'+body+'</tbody></table></div></div>'+
-   '<p class="foot">ההערכה מבוססת על לוח שנה בלבד: ימי עבודה לפי שבוע העבודה ומספר השעות שנבחרו, בלי חגים, חופשות ומחלות. בטבלה אין נתוני נוכחות, ולכן אלה לא שעות בפועל.</p>';
+  const notes=[];
+  if(state.checks.unmatched.length)notes.push(state.checks.unmatched.length+' מספרי זהות בקובץ הנוכחות לא נמצאו בטבלת העובדים ולא נספרו ('+state.checks.unmatched.slice(0,5).map(maskId).join(', ')+(state.checks.unmatched.length>5?' ועוד':'')+').');
+  if(state.checks.outside)notes.push(state.checks.outside+' ימי נוכחות שנופלים לפני תחילת העבודה או אחרי העזיבה לא נספרו.');
+  if(d.noAtt)notes.push('ל־'+d.noAtt+' עובדים אין נתוני נוכחות, והם לא נכללים בסיכומים.');
+  out.innerHTML=kp+'<div class="panel"><div class="panel-h"><div><h3>לפי עובד</h3><p class="hint">הפס מראה כמה מימי העבודה האפשריים בחצי השנה הראשונה כבר עבד/ה בפועל.</p></div>'+exportBtn('half',!d.data.length)+'</div>'+
+   '<div class="tbl tall"><table><thead><tr><th class="nm">עובד/ת</th><th>התחלה</th><th>ימי עבודה</th><th>שעות</th>'+(d.hasAbs?'<th>ימי היעדרות</th>':'')+'<th>מצב</th></tr></thead><tbody>'+body+'</tbody></table></div></div>'+
+   (notes.length?'<p class="foot">'+esc(notes.join(' '))+'</p>':'')+
+   '<p class="foot">יום עבודה נספר רק אם דווחו בו שעות עבודה. חופשה, מחלה, מילואים וחגים נספרים בנפרד כימי היעדרות. ימי עבודה אפשריים מחושבים לפי שבוע העבודה שנבחר.</p>';
+}
+
+/* ---------- export (ID numbers are never included) ---------- */
+const stName=(r,t)=>ST[r.tasks[t.id]]+(excOf(r,t)?' (חריגה: פתוחה '+excOf(r,t)+' ימים)':'');
+function sheetData(k,F){
+  if(k==='onb'){const d=calcOnb(F);return{name:'מי עוד באמצע',head:['עובד','מחלקה','תפקיד','תאריך תחילה','ימים מתחילת העבודה'].concat(d.T.map(t=>t.label),['משימות חסרות','משימות בחריגה']),rows:d.open.map(o=>[o.r.name,o.r.dept,o.r.role,fmtDate(o.r.start),Math.round((TODAY-o.r.start)/DAY)].concat(d.T.map(t=>stName(o.r,t)),[o.miss,o.exc]))}}
+  if(k==='soon'){const d=calcProb(F);return{name:'מסיימים בקרוב',head:['עובד','מחלקה','תפקיד','תאריך תחילה','סיום תקופת ניסיון','ימים עד הסיום'],rows:d.soon.map(x=>[x.r.name,x.r.dept,x.r.role,fmtDate(x.r.start),fmtDate(x.end),x.days])}}
+  if(k==='out'){const d=calcProb(F);return{name:'בלי המשך',head:['עובד','מחלקה','תפקיד','תאריך תחילה','תאריך עזיבה','ימים שעבד/ה'],rows:d.ended.map(x=>[x.r.name,x.r.dept,x.r.role,fmtDate(x.r.start),fmtDate(x.r.leftEff),x.days])}}
+  const d=calcHalf(F);
+  return{name:'ימים ושעות',head:['עובד','מחלקה','תאריך תחילה','ימי עבודה','ימי עבודה אפשריים','שעות','ימי היעדרות','מצב'],rows:d.data.map(x=>[x.r.name,x.r.dept,fmtDate(x.r.start),x.noAtt?'':x.work,x.pot,x.noAtt?'':Math.round(x.hours*100)/100,x.noAtt?'':x.abs,x.noAtt?'אין נתוני נוכחות':x.left?'עזב/ה לפני חצי שנה':x.done?'השלים/ה חצי שנה':'בחצי השנה הראשונה'])};
+}
+async function saveFile(name,blob){
+  try{
+    if(window.claude&&window.claude.use){const dl=await window.claude.use('downloads');if(dl){await dl.save({filename:name,data:blob});return}}
+  }catch(e){if(e&&e.code==='declined')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+async function exportSheets(keys){
+  const F=cohort(),sheets=keys.map(k=>sheetData(k,F));
+  if(!sheets.some(s=>s.rows.length)){setNote('<span>אין נתונים לייצוא בתקופה ובמחלקות שנבחרו.</span>','warn');return}
+  const stamp=isoOf(TODAY);
+  try{
+    if(window.XLSX){
+      const wb=XLSX.utils.book_new();
+      sheets.forEach(s=>{const ws=XLSX.utils.aoa_to_sheet([s.head].concat(s.rows));ws['!cols']=s.head.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,s.name)});
+      wb.Workbook={Views:[{RTL:true}]};
+      const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+      await saveFile('קליטת-עובדים-'+stamp+'.xlsx',new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    }else{
+      const s=sheets.find(x=>x.rows.length),q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+      const csv='﻿'+[s.head].concat(s.rows).map(r=>r.map(q).join(',')).join('\r\n');
+      await saveFile('קליטת-עובדים-'+stamp+'.csv',new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    }
+  }catch(e){setNote('<span>הייצוא לא הושלם: '+esc(e&&e.message||'שגיאה לא ידועה')+'</span>','warn')}
+}
+
+/* ---------- filters ---------- */
+function presetRange(p){
+  const cs=keyToT(CUR);
+  if(p==='month')return[cs,endOfMonth(cs)];
+  if(p==='prev'){const s=addMonths(cs,-1);return[s,endOfMonth(s)]}
+  if(p==='3'||p==='6'||p==='year'){const n=p==='3'?-2:p==='6'?-5:-11;return[addMonths(cs,n),endOfMonth(cs)]}
+  const ts=state.emps.map(r=>r.start);return ts.length?[Math.min.apply(null,ts),Math.max.apply(null,ts)]:[cs,endOfMonth(cs)];
+}
+function applyPreset(p){const r=presetRange(p);state.from=r[0];state.to=r[1];state.preset=p;syncFilters();renderAll()}
+function syncFilters(){
+  $('#fromIn').value=isoOf(state.from);$('#toIn').value=isoOf(state.to);
+  document.querySelectorAll('#presetSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.preset===state.preset)));
+}
+function fillDepts(){
+  const all=tally(state.emps,'dept').map(x=>x[0]).sort((a,b)=>a.localeCompare(b,'he'));
+  $('#deptList').innerHTML='<label><input type="checkbox" id="dept-all"'+(!state.depts?' checked':'')+'>כל המחלקות</label>'+all.map((d,i)=>'<label><input type="checkbox" class="dept-c" id="dept-'+i+'" value="'+esc(d)+'"'+(!state.depts||state.depts.has(d)?' checked':'')+'>'+esc(d)+'</label>').join('');
+  updateDeptSum();
+}
+function updateDeptSum(){$('#deptSum').textContent=!state.depts?'כל המחלקות':state.depts.size===1?[...state.depts][0]:state.depts.size+' מחלקות'}
+function onDeptChange(e){
+  const t=e.target;if(t.type!=='checkbox')return;
+  const boxes=[...document.querySelectorAll('.dept-c')];
+  if(t.id==='dept-all'){state.depts=null;boxes.forEach(b=>{b.checked=true});$('#dept-all').checked=true}
+  else{
+    const sel=boxes.filter(b=>b.checked).map(b=>b.value);
+    if(sel.length===0||sel.length===boxes.length){state.depts=null;boxes.forEach(b=>{b.checked=true})}else state.depts=new Set(sel);
+    $('#dept-all').checked=!state.depts;
+  }
+  updateDeptSum();renderAll();
+}
+function onDates(){
+  const f=fromIso($('#fromIn').value),t=fromIso($('#toIn').value);
+  if(f==null||t==null){$('#rmsg').textContent='יש להזין תאריך התחלה ותאריך סיום.';return}
+  if(f>t){$('#rmsg').textContent='תאריך ההתחלה מאוחר מתאריך הסיום. תקנו כדי לעדכן את הנתונים.';return}
+  $('#rmsg').textContent='';state.from=f;state.to=t;state.preset=null;
+  document.querySelectorAll('#presetSeg button').forEach(b=>b.setAttribute('aria-pressed','false'));
+  renderAll();
 }
 
 /* ---------- orchestration ---------- */
-function fillMonthSel(){
-  var keys={};state.rows.forEach(function(r){keys[monthKey(r.start)]=1});keys[CUR]=1;keys[state.month]=1;
-  var list=Object.keys(keys).sort().reverse(),sel=$('#monthSel');
-  sel.innerHTML=list.map(function(k){return'<option value="'+k+'">'+esc(monthLabel(k))+'</option>'}).join('');
-  sel.value=state.month;
-}
+function setNote(html,kind){const n=$('#note');n.className='note'+(kind==='warn'?' warn':'');n.innerHTML=html;n.hidden=!html}
 function renderAll(){
   prep();
-  fillMonthSel();
-  $('#asof').textContent='נכון להיום, '+new Date(TODAY).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'})+' · '+(state.source.sample?'נתוני דוגמה':'מקור: '+state.source.name)+' · '+state.rows.length+' עובדים';
-  $('#resetBtn').hidden=!!state.source.sample;
-  Array.prototype.forEach.call(document.querySelectorAll('#scopeSeg button'),function(b){b.setAttribute('aria-pressed',String(b.dataset.scope===state.scope))});
-  renderMonth();renderOnb();renderProb();renderHalf();
+  const F=cohort(),s=state.src;
+  $('#asof').textContent='עודכן ב־'+fmtDate(s.updated)+' · '+s.name+' · '+state.emps.length+' עובדים'+(state.attSrc&&state.attSrc.kind!=='sample'?' · נוכחות: '+state.attSrc.name+' ('+fmtDate(state.attSrc.updated)+')':'');
+  $('#resetBtn').hidden=s.kind==='sample';
+  const eb=$('#exportBtn'),dis=!F.length;
+  eb.setAttribute('aria-disabled',String(dis));
+  if(dis)eb.dataset.tip='אין נתונים לייצוא בתקופה שנבחרה';else delete eb.dataset.tip;
+  renderJoin(F);renderOnb(F);renderProb(F);renderHalf(F);
 }
-function setNote(html,err){var n=$('#note');n.className='note'+(err?' err':'');n.innerHTML=html;n.hidden=!html}
-
-async function handleFile(file){
+function loadData(rows,tasks,att,src,attSrc){
+  state.emps=rows;state.tasks=tasks;state.att=att;state.src=src;state.attSrc=attSrc;state.depts=null;
+  prep();recomputeChecks();fillDepts();
+}
+function useSample(){
+  const s=makeSample(),smp={kind:'sample',name:'נתוני דוגמה',updated:TODAY};
+  loadData(s.rows,s.tasks,s.att,smp,smp);
+  setNote('<span>מוצגים <b>נתוני דוגמה</b>: כל השמות והמספרים מומצאים. כדי לראות נתונים אמיתיים, טעני קובץ עובדים וקובץ נוכחות.</span>');
+}
+async function onEmpFile(file){
   if(!file)return;
   try{
-    var res=await readFile(file);
-    state.rows=res.rows;state.tasks=res.tasks;state.source={sample:false,name:file.name};
-    state.month=pickMonth();save();
-    var found=res.tasks.map(function(t){return t.label}).join(', ')||'לא זוהו';
-    var miss=[];if(!res.mapped.dept)miss.push('מחלקה');if(!res.mapped.role)miss.push('תפקיד');if(!res.mapped.opened)miss.push('תאריך פתיחת משרה');if(!res.mapped.left)miss.push('תאריך עזיבה');
-    setNote('<span>נטענו <b>'+res.rows.length+'</b> עובדים מהקובץ “'+esc(file.name)+'”.</span><span>משימות קליטה שזוהו: <b>'+esc(found)+'</b>.</span>'+
-      (res.skipped?'<span>דולגו '+res.skipped+' שורות בלי תאריך תחילת עבודה תקין.</span>':'')+
-      (miss.length?'<span>לא נמצאה עמודה של: '+esc(miss.join(', '))+'.</span>':'')+
-      (state.month!==CUR?'<span>מוצג '+esc(monthLabel(state.month))+', החודש האחרון עם קליטות.</span>':''));
+    const res=parseEmployees(await fileToMatrix(file));
+    /* new employees replace everything; sample attendance is never mixed with real employees */
+    const keep=state.attSrc&&state.attSrc.kind!=='sample';
+    loadData(res.rows,res.tasks,keep?state.att:null,{kind:'file',name:file.name,updated:file.lastModified?dayOfMs(file.lastModified):TODAY},keep?state.attSrc:null);
+    state.preset='month';let rg=presetRange('month'),extra='';state.from=rg[0];state.to=rg[1];
+    if(!state.emps.some(inRange)){state.preset='all';rg=presetRange('all');state.from=rg[0];state.to=rg[1];extra='<span>אין קליטות בחודש הנוכחי, ולכן מוצגות כל התקופות.</span>'}
+    const st=res.stats,miss=[];
+    if(!res.mapped.dept)miss.push('מחלקה');if(!res.mapped.role)miss.push('תפקיד');if(!res.mapped.opened)miss.push('תאריך פתיחת משרה');if(!res.mapped.left)miss.push('תאריך עזיבה');
+    const parts=['<span>נטענו <b>'+res.rows.length+'</b> עובדים מהקובץ “'+esc(file.name)+'”. הנתונים הקודמים הוחלפו.</span>','<span>משימות שזוהו: <b>'+esc(res.tasks.map(t=>t.label).join(', ')||'אין')+'</b>.</span>'];
+    if(st.noId)parts.push('<span>דולגו '+st.noId+' שורות בלי מספר זהות.</span>');
+    if(st.noDate)parts.push('<span>דולגו '+st.noDate+' שורות בלי תאריך תחילת עבודה תקין.</span>');
+    if(st.dup)parts.push('<span>דולגו '+st.dup+' שורות כפולות (אותו מספר זהות).</span>');
+    if(st.badId)parts.push('<span>'+st.badId+' מספרי זהות לא תקינים (ספרת ביקורת). השורות נשארו וסומנו.</span>');
+    if(miss.length)parts.push('<span>לא נמצאה עמודה של: '+esc(miss.join(', '))+'.</span>');
+    if(!keep)parts.push('<span>אין קובץ נוכחות. טעני אותו כדי לראות ימים ושעות.</span>');
+    setNote(parts.join('')+extra,(st.badId||st.dup||st.noId)?'warn':'');
+    syncFilters();renderAll();
+  }catch(e){setNote('<span>'+esc(e.message||'לא הצלחנו לקרוא את הקובץ.')+'</span>','warn')}
+}
+async function onAttFile(file){
+  if(!file)return;
+  try{
+    const res=parseAttendance(await fileToMatrix(file));
+    state.att=res.att;state.attSrc={kind:'file',name:file.name,updated:file.lastModified?dayOfMs(file.lastModified):TODAY};
+    prep();recomputeChecks();
+    const parts=['<span>נטענו <b>'+num(res.rows)+'</b> ימי נוכחות של '+res.employees+' עובדים מהקובץ “'+esc(file.name)+'”. נתוני הנוכחות הקודמים הוחלפו.</span>'];
+    if(res.skipped)parts.push('<span>דולגו '+num(res.skipped)+' שורות בלי מספר זהות, תאריך או שעות תקינים.</span>');
+    if(res.badId)parts.push('<span>'+res.badId+' שורות עם מספר זהות שאינו תקין.</span>');
+    if(state.checks.unmatched.length)parts.push('<span>'+state.checks.unmatched.length+' מספרי זהות לא נמצאו בטבלת העובדים ולא ייספרו ('+state.checks.unmatched.slice(0,5).map(maskId).join(', ')+(state.checks.unmatched.length>5?' ועוד':'')+').</span>');
+    if(state.src.kind==='sample')parts.push('<span>שימי לב: נתוני העובדים הם נתוני דוגמה. טעני גם קובץ עובדים.</span>');
+    setNote(parts.join(''),(state.checks.unmatched.length||res.badId||state.src.kind==='sample')?'warn':'');
     renderAll();
-  }catch(e){setNote('<span>'+esc(e.message||'לא הצלחנו לקרוא את הקובץ.')+'</span>',true)}
+  }catch(e){setNote('<span>'+esc(e.message||'לא הצלחנו לקרוא את קובץ הנוכחות.')+'</span>','warn')}
+}
+/* shared files from the repository: only over http, otherwise the sample stays */
+async function tryShared(){
+  if(!/^https?:$/.test(location.protocol))return;
+  try{
+    const r=await fetch('data/employees.csv',{cache:'no-store'});
+    if(!r.ok)return;
+    const lm=r.headers.get('Last-Modified'),res=parseEmployees(parseCSV(await r.text()));
+    let att=null,attSrc=null;
+    try{
+      const a=await fetch('data/attendance.csv',{cache:'no-store'});
+      if(a.ok){const alm=a.headers.get('Last-Modified');att=parseAttendance(parseCSV(await a.text())).att;attSrc={kind:'shared',name:'קובץ משותף ב־GitHub',updated:alm?dayOfMs(new Date(alm).getTime()):TODAY}}
+    }catch(e){}
+    loadData(res.rows,res.tasks,att,{kind:'shared',name:'קובץ משותף ב־GitHub',updated:lm?dayOfMs(new Date(lm).getTime()):TODAY},attSrc);
+    let rg=presetRange('month');state.preset='month';state.from=rg[0];state.to=rg[1];
+    if(!state.emps.some(inRange)){rg=presetRange('all');state.preset='all';state.from=rg[0];state.to=rg[1]}
+    setNote('');syncFilters();renderAll();
+  }catch(e){/* no shared file: keep the sample */}
 }
 
 /* ---------- events ---------- */
-$('#importBtn').addEventListener('click',function(){$('#fileIn').click()});
-$('#fileIn').addEventListener('change',function(e){handleFile(e.target.files[0]);e.target.value=''});
-$('#resetBtn').addEventListener('click',function(){useSample();state.month=CUR;try{localStorage.removeItem(LS_KEY)}catch(e){}setNote('');renderAll()});
-$('#monthSel').addEventListener('change',function(e){state.month=e.target.value;renderMonth();renderOnb()});
-$('#probSel').addEventListener('change',function(e){state.prob=+e.target.value;renderProb()});
-$('#weekSel').addEventListener('change',function(e){state.week=e.target.value;renderHalf()});
-$('#hoursIn').addEventListener('input',function(e){var v=parseFloat(e.target.value);if(v>=1&&v<=12){state.hpd=v;renderHalf()}});
-document.addEventListener('click',function(e){
-  var c=e.target.closest('[data-month]');if(c){state.month=c.dataset.month;fillMonthSel();renderMonth();renderOnb();return}
-  var s=e.target.closest('#scopeSeg button');if(s){state.scope=s.dataset.scope;renderAll()}
+$('#empBtn').addEventListener('click',()=>$('#empIn').click());
+$('#attBtn').addEventListener('click',()=>$('#attIn').click());
+$('#empIn').addEventListener('change',e=>{onEmpFile(e.target.files[0]);e.target.value=''});
+$('#attIn').addEventListener('change',e=>{onAttFile(e.target.files[0]);e.target.value=''});
+$('#resetBtn').addEventListener('click',()=>{useSample();applyPreset('month')});
+$('#clearBtn').addEventListener('click',()=>{state.depts=null;fillDepts();$('#rmsg').textContent='';applyPreset('month')});
+$('#exportBtn').addEventListener('click',()=>{if($('#exportBtn').getAttribute('aria-disabled')==='true')return;exportSheets(['onb','soon','out','half'])});
+$('#presetSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){$('#rmsg').textContent='';applyPreset(b.dataset.preset)}});
+$('#fromIn').addEventListener('change',onDates);$('#toIn').addEventListener('change',onDates);
+$('#deptList').addEventListener('change',onDeptChange);
+$('#weekSel').addEventListener('change',e=>{state.week=e.target.value;renderHalf(cohort())});
+document.addEventListener('click',e=>{
+  const m=e.target.closest('[data-month]');
+  if(m){const s=keyToT(m.dataset.month);state.from=s;state.to=endOfMonth(s);state.preset=null;syncFilters();renderAll();return}
+  const a=e.target.closest('[data-act]');
+  if(a){
+    if(a.dataset.act==='export'){if(a.getAttribute('aria-disabled')!=='true')exportSheets([a.dataset.sheets])}
+    else if(a.dataset.act==='load-att')$('#attIn').click();
+    else if(a.dataset.act==='preset-all')applyPreset('all');
+    return;
+  }
+  const ms=$('#deptMs');if(ms.open&&!e.target.closest('#deptMs'))ms.open=false;
 });
-var app=$('#app');
-['dragenter','dragover'].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault();app.classList.add('drop')})});
-['dragleave','drop'].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault();app.classList.remove('drop');if(t==='drop'&&e.dataTransfer&&e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])})});
-
-var tip=$('#tip');
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const ms=$('#deptMs');if(ms.open){ms.open=false;$('#deptSum').focus()}}});
+const app=$('#app');
+['dragenter','dragover'].forEach(t=>document.addEventListener(t,e=>{e.preventDefault();app.classList.add('drop')}));
+['dragleave','drop'].forEach(t=>document.addEventListener(t,e=>{
+  e.preventDefault();app.classList.remove('drop');
+  const f=t==='drop'&&e.dataTransfer&&e.dataTransfer.files[0];if(!f)return;
+  /* an attendance file has hours per row and no start date: decide by its header */
+  fileToMatrix(f).then(m=>{const h=(m[0]||[]).map(normHdr).join('|');(/שעות|hours|כניסה/.test(h)&&!/פתיח|תחיל|התחל/.test(h)?onAttFile:onEmpFile)(f)}).catch(err=>setNote('<span>'+esc(err.message)+'</span>','warn'));
+}));
+const tip=$('#tip');
 function tipMove(e){
-  var t=e.target.closest&&e.target.closest('[data-tip]');
+  const t=e.target.closest&&e.target.closest('[data-tip]');
   if(!t){tip.hidden=true;return}
   tip.textContent=t.dataset.tip;tip.hidden=false;
-  var w=tip.offsetWidth,h=tip.offsetHeight,x=Math.min(Math.max(8,e.clientX-w/2),window.innerWidth-w-8),y=e.clientY-h-14;
-  if(y<8)y=e.clientY+18;
+  const w=tip.offsetWidth,h=tip.offsetHeight;
+  const x=Math.min(Math.max(8,e.clientX-w/2),window.innerWidth-w-8);let y=e.clientY-h-14;
+  if(y<8)y=e.clientY+20;
   tip.style.left=x+'px';tip.style.top=y+'px';
 }
 document.addEventListener('pointermove',tipMove);document.addEventListener('pointerdown',tipMove);
-document.addEventListener('scroll',function(){tip.hidden=true},true);
+document.addEventListener('scroll',()=>{tip.hidden=true},true);
 
 /* ---------- boot ---------- */
-if(!load())useSample();
-state.month=state.source.sample?CUR:pickMonth();
+useSample();
+{const rg=presetRange('month');state.from=rg[0];state.to=rg[1];}
+syncFilters();
 renderAll();
+tryShared();
 })();
 </script>
