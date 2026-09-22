@@ -62,8 +62,6 @@ button,select,input,summary{font:inherit;color:inherit}
 .eyebrow{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--blue)}
 h1{margin:0;font-size:40px;line-height:1.15;font-weight:700;letter-spacing:-.01em}
 .asof{margin:8px 0 0;color:var(--muted);font-size:16px}
-.asof a{color:var(--blue);font-weight:600;text-decoration:none}
-.asof a:hover{text-decoration:underline}
 .tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .note{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center;padding:14px 20px;border-radius:12px;background:var(--blue-soft);font-size:16px;margin-top:-24px}
 .note[hidden]{display:none!important}
@@ -243,7 +241,8 @@ tr.exc td.nm{box-shadow:inset -5px 0 0 var(--orange)}
     <div class="tools">
       <button class="btn primary" id="empBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6.5 9.5 12 4l5.5 5.5M4 20h16"/></svg>טעינת קובץ עובדים</button>
       <button class="btn secondary" id="attBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6.5 9.5 12 4l5.5 5.5M4 20h16"/></svg>טעינת קובץ נוכחות</button>
-      <button class="btn tertiary" id="resetBtn" type="button" hidden>חזרה לנתוני דוגמה</button>
+      <button class="btn tertiary" id="demoBtn" type="button">הצגת נתוני דוגמה</button>
+      <button class="btn tertiary" id="resetBtn" type="button" hidden>ניקוי הנתונים שנטענו</button>
       <input type="file" id="empIn" accept=".xlsx,.xls,.csv,.txt" hidden>
       <input type="file" id="attIn" accept=".xlsx,.xls,.csv,.txt" hidden>
     </div>
@@ -329,7 +328,6 @@ const pct=(a,b)=>b?Math.round(a/b*100):0;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const $=s=>document.querySelector(s);
 const CUR=monthKey(TODAY);
-const EMPTY_MODE=new URLSearchParams(location.search).get('empty')==='1';
 
 /* ---------- tasks, thresholds, statuses ---------- */
 const TASKS=[
@@ -849,18 +847,41 @@ function setNote(html,kind){const n=$('#note');n.className='note'+(kind==='warn'
 function renderAll(){
   prep();
   const F=cohort(),s=state.src;
-  const base='עודכן ב־'+fmtDate(s.updated)+' · '+s.name+' · '+state.emps.length+' עובדים'+(state.attSrc&&state.attSrc.kind!=='sample'?' · נוכחות: '+state.attSrc.name+' ('+fmtDate(state.attSrc.updated)+')':'');
-  const modeLink=EMPTY_MODE?'<a href="?">גרסה עם נתוני דוגמה</a>':'<a href="?empty=1">גרסה ריקה, לטעינת קובץ משלכם</a>';
-  $('#asof').innerHTML=esc(base)+' · '+modeLink;
-  $('#resetBtn').hidden=s.kind===(EMPTY_MODE?'empty':'sample');
+  $('#asof').textContent='עודכן ב־'+fmtDate(s.updated)+' · '+s.name+' · '+state.emps.length+' עובדים'+(state.attSrc&&state.attSrc.kind!=='sample'?' · נוכחות: '+state.attSrc.name+' ('+fmtDate(state.attSrc.updated)+')':'');
+  $('#demoBtn').hidden=s.kind!=='empty';
+  $('#resetBtn').hidden=s.kind==='empty';
   const eb=$('#exportBtn'),dis=!F.length;
   eb.setAttribute('aria-disabled',String(dis));
   if(dis)eb.dataset.tip='אין נתונים לייצוא בתקופה שנבחרה';else delete eb.dataset.tip;
   renderJoin(F);renderOnb(F);renderProb(F);renderHalf(F);
 }
+/* Per-browser memory (not shared with anyone, not sent anywhere): whatever this browser
+   last loaded — a real file or the demo — reappears on the next visit, in THIS browser only.
+   A different browser or a freshly cleared one sees the empty, ready-to-load screen. */
+const LS_KEY='hr-onboarding-dashboard-v1';
+function attToJSON(att){return att?[...att.entries()].map(([id,m])=>[id,[...m.entries()]]):null}
+function attFromJSON(arr){if(!arr)return null;const att=new Map();arr.forEach(([id,entries])=>att.set(id,new Map(entries)));return att}
+function persist(){
+  try{
+    if(state.src.kind==='empty'){localStorage.removeItem(LS_KEY);return}
+    localStorage.setItem(LS_KEY,JSON.stringify({emps:state.emps,tasks:state.tasks,src:state.src,att:attToJSON(state.att),attSrc:state.attSrc}));
+  }catch(e){/* storage full, blocked, or unavailable: the page still works, just without memory */}
+}
+function loadPersisted(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw)return false;
+    const d=JSON.parse(raw);
+    if(!d||!Array.isArray(d.emps)||!d.emps.length)return false;
+    loadData(d.emps,d.tasks||[],attFromJSON(d.att),d.src||{kind:'file',name:'קובץ שנטען קודם',updated:TODAY},d.attSrc||null);
+    setNote(d.src&&d.src.kind==='sample'?SAMPLE_NOTE:'<span>אלה הנתונים שטענת לאחרונה <b>בדפדפן הזה</b>. הם לא משותפים עם מי שפותח את הקישור בדפדפן או במחשב אחר, ולא נשלחים לשום מקום.</span>');
+    return true;
+  }catch(e){return false}
+}
 function loadData(rows,tasks,att,src,attSrc){
   state.emps=rows;state.tasks=tasks;state.att=att;state.src=src;state.attSrc=attSrc;state.depts=null;
   prep();recomputeChecks();fillDepts();
+  persist();
 }
 const SAMPLE_NOTE='<span>מוצגים <b>נתוני דוגמה</b>: כל השמות והמספרים מומצאים. כדי לראות נתונים אמיתיים, טעני קובץ עובדים וקובץ נוכחות.</span>';
 function useSample(){
@@ -870,7 +891,7 @@ function useSample(){
 }
 function startEmpty(){
   loadData([],[],null,{kind:'empty',name:'ללא נתונים',updated:TODAY},null);
-  setNote('<span>אין נתונים טעונים. טעני <b>קובץ עובדים</b>, ואחריו <b>קובץ נוכחות</b>, בכפתורים שלמעלה.</span>');
+  setNote('<span>אין נתונים טעונים. טעני <b>קובץ עובדים</b>, ואחריו <b>קובץ נוכחות</b>, בכפתורים שלמעלה. אפשר גם ללחוץ על “הצגת נתוני דוגמה” כדי לראות דוגמה קודם.</span>');
 }
 async function onEmpFile(file){
   if(!file)return;
@@ -899,7 +920,7 @@ async function onAttFile(file){
   try{
     const res=parseAttendance(await fileToMatrix(file));
     state.att=res.att;state.attSrc={kind:'file',name:file.name,updated:file.lastModified?dayOfMs(file.lastModified):TODAY};
-    prep();recomputeChecks();
+    prep();recomputeChecks();persist();
     const parts=['<span>נטענו <b>'+num(res.rows)+'</b> ימי נוכחות של '+res.employees+' עובדים מהקובץ “'+esc(file.name)+'”. נתוני הנוכחות הקודמים הוחלפו.</span>'];
     if(res.skipped)parts.push('<span>דולגו '+num(res.skipped)+' שורות בלי מספר זהות, תאריך או שעות תקינים.</span>');
     if(res.badId)parts.push('<span>'+res.badId+' שורות עם מספר זהות שאינו תקין.</span>');
@@ -912,37 +933,20 @@ async function onAttFile(file){
     renderAll();
   }catch(e){setNote('<span>'+esc(e.message||'לא הצלחנו לקרוא את קובץ הנוכחות.')+'</span>','warn')}
 }
-/* Shared data files in the repository, next to this page (dashboard/data/).
-   Until the privacy approval (SPEC, question 2) these are the fictional sample files.
-   After approval: change to 'data/employees.csv' and 'data/attendance.csv'.
-   Only over http(s); when opened as a local file or inside Claude, the built-in sample stays. */
-const SHARED={employees:'data/sample-employees.csv',attendance:'data/sample-attendance.csv'};
-async function tryShared(){
-  if(!/^https?:$/.test(location.protocol))return;
-  try{
-    const isSample=/(^|\/)sample-/.test(SHARED.employees),kind=isSample?'sample':'shared',name=isSample?'נתוני דוגמה':'קובץ משותף ב־GitHub';
-    const r=await fetch(SHARED.employees,{cache:'no-store'});
-    if(!r.ok)return;
-    const when=resp=>{const lm=resp.headers.get('Last-Modified');return lm?dayOfMs(new Date(lm).getTime()):TODAY};
-    const res=parseEmployees(parseCSV(await r.text()));
-    let att=null,attSrc=null;
-    try{
-      const a=await fetch(SHARED.attendance,{cache:'no-store'});
-      if(a.ok){att=parseAttendance(parseCSV(await a.text())).att;attSrc={kind,name,updated:when(a)}}
-    }catch(e){}
-    loadData(res.rows,res.tasks,att,{kind,name,updated:when(r)},attSrc);
-    let rg=presetRange('month');state.preset='month';state.from=rg[0];state.to=rg[1];
-    if(!state.emps.some(inRange)){rg=presetRange('all');state.preset='all';state.from=rg[0];state.to=rg[1]}
-    setNote(isSample?SAMPLE_NOTE:'');syncFilters();renderAll();
-  }catch(e){/* no shared file: keep the built-in sample */}
-}
+/* Shared storage (SPEC section 3/8, question 2) is not live yet: the plain link must open
+   empty and never issue a network request that could 404, so nothing here fetches
+   dashboard/data/*.csv automatically. Once real employees.csv/attendance.csv are approved
+   and added to dashboard/data/, re-introduce a fetch-on-load here that falls back to
+   startEmpty() on any failure. Until then, "הצגת נתוני דוגמה" (demoBtn) uses the in-browser
+   generator below (makeSample), which never touches the network. */
 
 /* ---------- events ---------- */
 $('#empBtn').addEventListener('click',()=>$('#empIn').click());
 $('#attBtn').addEventListener('click',()=>$('#attIn').click());
 $('#empIn').addEventListener('change',e=>{onEmpFile(e.target.files[0]);e.target.value=''});
 $('#attIn').addEventListener('change',e=>{onAttFile(e.target.files[0]);e.target.value=''});
-$('#resetBtn').addEventListener('click',()=>{(EMPTY_MODE?startEmpty:useSample)();applyPreset('month')});
+$('#demoBtn').addEventListener('click',()=>{useSample();applyPreset('month')});
+$('#resetBtn').addEventListener('click',()=>{startEmpty();applyPreset('month')});
 $('#clearBtn').addEventListener('click',()=>{state.depts=null;fillDepts();$('#rmsg').textContent='';applyPreset('month')});
 $('#exportBtn').addEventListener('click',()=>{if($('#exportBtn').getAttribute('aria-disabled')==='true')return;exportSheets(['onb','soon','out','half'])});
 $('#presetSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){$('#rmsg').textContent='';applyPreset(b.dataset.preset)}});
@@ -985,15 +989,9 @@ document.addEventListener('pointermove',tipMove);document.addEventListener('poin
 document.addEventListener('scroll',()=>{tip.hidden=true},true);
 
 /* ---------- boot ---------- */
-if(EMPTY_MODE){
-  $('#resetBtn').textContent='ניקוי הנתונים שנטענו';
-  startEmpty();
-}else{
-  useSample();
-}
+if(!loadPersisted())startEmpty();
 {const rg=presetRange('month');state.from=rg[0];state.to=rg[1];}
 syncFilters();
 renderAll();
-if(!EMPTY_MODE)tryShared();
 })();
 </script>
