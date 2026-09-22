@@ -62,6 +62,8 @@ button,select,input,summary{font:inherit;color:inherit}
 .eyebrow{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--blue)}
 h1{margin:0;font-size:40px;line-height:1.15;font-weight:700;letter-spacing:-.01em}
 .asof{margin:8px 0 0;color:var(--muted);font-size:16px}
+.asof a{color:var(--blue);font-weight:600;text-decoration:none}
+.asof a:hover{text-decoration:underline}
 .tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .note{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center;padding:14px 20px;border-radius:12px;background:var(--blue-soft);font-size:16px;margin-top:-24px}
 .note[hidden]{display:none!important}
@@ -327,6 +329,7 @@ const pct=(a,b)=>b?Math.round(a/b*100):0;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const $=s=>document.querySelector(s);
 const CUR=monthKey(TODAY);
+const EMPTY_MODE=new URLSearchParams(location.search).get('empty')==='1';
 
 /* ---------- tasks, thresholds, statuses ---------- */
 const TASKS=[
@@ -641,7 +644,9 @@ function excCell(r,t){
   return'<span class="exc-c" role="img" aria-label="חריגה. '+esc(tt)+'" data-tip="'+esc(tt)+'">'+ICON.warn+'<span>'+age+' ימים</span></span>';
 }
 const exportBtn=(k,dis)=>'<button type="button" class="btn tertiary sm" data-act="export" data-sheets="'+k+'"'+(dis?' aria-disabled="true" data-tip="אין נתונים לייצוא"':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6.5 10.5 12 16l5.5-5.5M4 20h16"/></svg>ייצוא</button>';
-const emptyCohort=()=>'<div class="panel"><div class="empty">אין עובדים בתקופה ובמחלקות שנבחרו. אפשר להרחיב את התקופה.<br><button type="button" class="btn secondary" data-act="preset-all">הצג את כל התקופות</button></div></div>';
+const emptyCohort=()=>state.emps.length?
+  '<div class="panel"><div class="empty">אין עובדים בתקופה ובמחלקות שנבחרו. אפשר להרחיב את התקופה.<br><button type="button" class="btn secondary" data-act="preset-all">הצג את כל התקופות</button></div></div>':
+  '<div class="panel"><div class="empty">עדיין לא נטען קובץ עובדים.<br><button type="button" class="btn primary" data-act="load-emp">טעינת קובץ עובדים</button></div></div>';
 const nameCell=r=>esc(r.name)+(r.idBad?'<span class="warnline">'+WARN_SM+'מספר זהות לא תקין</span>':'');
 
 /* ---------- section 1: who joined ---------- */
@@ -685,6 +690,7 @@ function tally(arr,key){return tallyBy(arr,r=>r[key])}
 /* ---------- section 2: onboarding ---------- */
 function renderOnb(F){
   const out=$('#out-onb');
+  if(!state.emps.length){out.innerHTML=emptyCohort();return}
   if(!state.tasks.length){out.innerHTML='<div class="panel"><div class="empty">בקובץ לא זוהו עמודות של משימות קליטה (חוזה, טופס 101, הדרכות, ציוד, הרשאות).</div></div>';return}
   if(!F.length){out.innerHTML=emptyCohort();return}
   const d=calcOnb(F);
@@ -843,8 +849,10 @@ function setNote(html,kind){const n=$('#note');n.className='note'+(kind==='warn'
 function renderAll(){
   prep();
   const F=cohort(),s=state.src;
-  $('#asof').textContent='עודכן ב־'+fmtDate(s.updated)+' · '+s.name+' · '+state.emps.length+' עובדים'+(state.attSrc&&state.attSrc.kind!=='sample'?' · נוכחות: '+state.attSrc.name+' ('+fmtDate(state.attSrc.updated)+')':'');
-  $('#resetBtn').hidden=s.kind==='sample';
+  const base='עודכן ב־'+fmtDate(s.updated)+' · '+s.name+' · '+state.emps.length+' עובדים'+(state.attSrc&&state.attSrc.kind!=='sample'?' · נוכחות: '+state.attSrc.name+' ('+fmtDate(state.attSrc.updated)+')':'');
+  const modeLink=EMPTY_MODE?'<a href="?">גרסה עם נתוני דוגמה</a>':'<a href="?empty=1">גרסה ריקה, לטעינת קובץ משלכם</a>';
+  $('#asof').innerHTML=esc(base)+' · '+modeLink;
+  $('#resetBtn').hidden=s.kind===(EMPTY_MODE?'empty':'sample');
   const eb=$('#exportBtn'),dis=!F.length;
   eb.setAttribute('aria-disabled',String(dis));
   if(dis)eb.dataset.tip='אין נתונים לייצוא בתקופה שנבחרה';else delete eb.dataset.tip;
@@ -859,6 +867,10 @@ function useSample(){
   const s=makeSample(),smp={kind:'sample',name:'נתוני דוגמה',updated:TODAY};
   loadData(s.rows,s.tasks,s.att,smp,smp);
   setNote(SAMPLE_NOTE);
+}
+function startEmpty(){
+  loadData([],[],null,{kind:'empty',name:'ללא נתונים',updated:TODAY},null);
+  setNote('<span>אין נתונים טעונים. טעני <b>קובץ עובדים</b>, ואחריו <b>קובץ נוכחות</b>, בכפתורים שלמעלה.</span>');
 }
 async function onEmpFile(file){
   if(!file)return;
@@ -891,9 +903,12 @@ async function onAttFile(file){
     const parts=['<span>נטענו <b>'+num(res.rows)+'</b> ימי נוכחות של '+res.employees+' עובדים מהקובץ “'+esc(file.name)+'”. נתוני הנוכחות הקודמים הוחלפו.</span>'];
     if(res.skipped)parts.push('<span>דולגו '+num(res.skipped)+' שורות בלי מספר זהות, תאריך או שעות תקינים.</span>');
     if(res.badId)parts.push('<span>'+res.badId+' שורות עם מספר זהות שאינו תקין.</span>');
-    if(state.checks.unmatched.length)parts.push('<span>'+state.checks.unmatched.length+' מספרי זהות לא נמצאו בטבלת העובדים ולא ייספרו ('+state.checks.unmatched.slice(0,5).map(maskId).join(', ')+(state.checks.unmatched.length>5?' ועוד':'')+').</span>');
-    if(state.src.kind==='sample')parts.push('<span>שימי לב: נתוני העובדים הם נתוני דוגמה. טעני גם קובץ עובדים.</span>');
-    setNote(parts.join(''),(state.checks.unmatched.length||res.badId||state.src.kind==='sample')?'warn':'');
+    if(!state.emps.length)parts.push('<span>עדיין לא נטען קובץ עובדים, ולכן אי אפשר להציג את הנוכחות. טעני גם אותו.</span>');
+    else{
+      if(state.checks.unmatched.length)parts.push('<span>'+state.checks.unmatched.length+' מספרי זהות לא נמצאו בטבלת העובדים ולא ייספרו ('+state.checks.unmatched.slice(0,5).map(maskId).join(', ')+(state.checks.unmatched.length>5?' ועוד':'')+').</span>');
+      if(state.src.kind==='sample')parts.push('<span>שימי לב: נתוני העובדים הם נתוני דוגמה. טעני גם קובץ עובדים.</span>');
+    }
+    setNote(parts.join(''),(state.checks.unmatched.length||res.badId||!state.emps.length||state.src.kind==='sample')?'warn':'');
     renderAll();
   }catch(e){setNote('<span>'+esc(e.message||'לא הצלחנו לקרוא את קובץ הנוכחות.')+'</span>','warn')}
 }
@@ -927,7 +942,7 @@ $('#empBtn').addEventListener('click',()=>$('#empIn').click());
 $('#attBtn').addEventListener('click',()=>$('#attIn').click());
 $('#empIn').addEventListener('change',e=>{onEmpFile(e.target.files[0]);e.target.value=''});
 $('#attIn').addEventListener('change',e=>{onAttFile(e.target.files[0]);e.target.value=''});
-$('#resetBtn').addEventListener('click',()=>{useSample();applyPreset('month')});
+$('#resetBtn').addEventListener('click',()=>{(EMPTY_MODE?startEmpty:useSample)();applyPreset('month')});
 $('#clearBtn').addEventListener('click',()=>{state.depts=null;fillDepts();$('#rmsg').textContent='';applyPreset('month')});
 $('#exportBtn').addEventListener('click',()=>{if($('#exportBtn').getAttribute('aria-disabled')==='true')return;exportSheets(['onb','soon','out','half'])});
 $('#presetSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){$('#rmsg').textContent='';applyPreset(b.dataset.preset)}});
@@ -941,6 +956,7 @@ document.addEventListener('click',e=>{
   if(a){
     if(a.dataset.act==='export'){if(a.getAttribute('aria-disabled')!=='true')exportSheets([a.dataset.sheets])}
     else if(a.dataset.act==='load-att')$('#attIn').click();
+    else if(a.dataset.act==='load-emp')$('#empIn').click();
     else if(a.dataset.act==='preset-all')applyPreset('all');
     return;
   }
@@ -969,10 +985,15 @@ document.addEventListener('pointermove',tipMove);document.addEventListener('poin
 document.addEventListener('scroll',()=>{tip.hidden=true},true);
 
 /* ---------- boot ---------- */
-useSample();
+if(EMPTY_MODE){
+  $('#resetBtn').textContent='ניקוי הנתונים שנטענו';
+  startEmpty();
+}else{
+  useSample();
+}
 {const rg=presetRange('month');state.from=rg[0];state.to=rg[1];}
 syncFilters();
 renderAll();
-tryShared();
+if(!EMPTY_MODE)tryShared();
 })();
 </script>
