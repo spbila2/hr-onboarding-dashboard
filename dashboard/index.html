@@ -209,6 +209,58 @@ tr.exc td.nm{box-shadow:inset -5px 0 0 var(--orange)}
 #tip[hidden]{display:none!important}
 .drop{outline:3px dashed var(--blue);outline-offset:-10px}
 
+/* ---------- screen tabs ---------- */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;border-bottom:2px solid var(--line);margin-top:-16px}
+.tab{height:52px;padding-inline:20px;border:0;border-bottom:4px solid transparent;margin-bottom:-2px;background:transparent;color:var(--ink2);font-size:18px;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0}
+.tab:hover{background:var(--blue-soft)}
+.tab[aria-selected="true"]{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+#view-onb{display:contents}
+#view-market{display:flex;flex-direction:column;gap:48px}
+
+/* ---------- market screen ---------- */
+.mk-filters{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 24px}
+.mk-filters .seg button{height:44px;font-size:16px}
+.mk-filters .factions{margin-inline-start:auto}
+.pr{display:grid;grid-template-columns:minmax(90px,150px) 1fr;gap:16px;align-items:center;padding-block:10px;border-bottom:1px solid var(--line)}
+.pr:last-child{border-bottom:0}
+.pr .tl{font-size:16px;color:var(--ink2)}
+.pr .bars{display:flex;flex-direction:column;gap:6px}
+.pb{display:flex;align-items:center;gap:10px;height:22px}
+.pb i{display:block;height:18px;border-radius:4px 0 0 4px;min-width:4px}
+.pb b{font-size:16px;font-variant-numeric:tabular-nums}
+.pb.us i{background:var(--blue)}.pb.them i{background:var(--blue-lite)}
+.cmp-r{display:grid;grid-template-columns:minmax(90px,170px) 1fr 80px;gap:16px;align-items:center;padding-block:10px}
+.cmp-r .tl{font-size:16px;color:var(--ink2)}
+.cmp-r .tn{font-size:16px;color:var(--muted);text-align:end;font-variant-numeric:tabular-nums}
+.cmp-w{min-width:0}
+.rg-r{display:grid;grid-template-columns:minmax(90px,150px) 1fr minmax(120px,auto);gap:16px;align-items:center;padding-block:10px}
+.rg-r .tl{font-size:16px;color:var(--ink2)}
+.rg-r .tn{font-size:15px;color:var(--ink2);text-align:end;font-variant-numeric:tabular-nums}
+.rg-r .tn small{display:block;font-size:14px;color:var(--muted)}
+.rg-t{position:relative;height:28px;direction:ltr;background:
+  repeating-linear-gradient(to right,transparent 0,transparent calc(25% - 1px),var(--line) calc(25% - 1px),var(--line) 25%)}
+.rg-b{position:absolute;top:8px;height:12px;border-radius:6px;background:var(--blue-lite)}
+.rg-m{position:absolute;top:4px;width:6px;height:20px;border-radius:3px;background:var(--blue);margin-left:-3px}
+.rg-ax{display:grid;grid-template-columns:minmax(90px,150px) 1fr minmax(120px,auto);gap:16px;padding-top:4px}
+.rg-ax div{display:flex;justify-content:space-between;direction:ltr;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.kw{display:flex;flex-wrap:wrap;gap:10px}
+.kw span{display:inline-flex;align-items:baseline;gap:8px;padding:8px 14px;border-radius:99px;background:var(--blue-soft);font-size:16px}
+.kw b{font-weight:700;font-variant-numeric:tabular-nums}
+.kw small{font-size:14px;color:var(--muted)}
+a.lnk{color:var(--blue);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.s-new{background:var(--orange-mark)}
+
+@media (max-width:640px){
+  .tab{flex:1 1 auto;padding-inline:12px;font-size:16px}
+  .mk-filters{padding:16px}
+  .mk-filters .factions{margin-inline-start:0;width:100%}
+  .pr{grid-template-columns:1fr;gap:4px}
+  .cmp-r{grid-template-columns:90px 1fr;gap:8px 12px}
+  .cmp-r .tn{grid-column:1/-1;text-align:start}
+  .rg-r,.rg-ax{grid-template-columns:90px 1fr;gap:8px 12px}
+  .rg-r .tn{grid-column:1/-1;text-align:start}
+  .rg-ax>:last-child{display:none}
+}
 @media (max-width:640px){
   body{font-size:16px}
   .wrap{padding-inline:16px;gap:40px}
@@ -247,6 +299,13 @@ tr.exc td.nm{box-shadow:inset -5px 0 0 var(--orange)}
       <input type="file" id="attIn" accept=".xlsx,.xls,.csv,.txt" hidden>
     </div>
   </header>
+
+  <nav class="tabs" role="tablist" aria-label="מסכי הדאשבורד">
+    <button class="tab" id="tab-onb" role="tab" type="button" aria-selected="true" aria-controls="view-onb" data-view="onb">קליטת עובדים</button>
+    <button class="tab" id="tab-market" role="tab" type="button" aria-selected="false" aria-controls="view-market" data-view="market">שוק העבודה והמתחרים</button>
+  </nav>
+
+  <div id="view-onb" role="tabpanel" aria-labelledby="tab-onb">
 
   <div class="note" id="note" role="status" hidden></div>
 
@@ -301,6 +360,32 @@ tr.exc td.nm{box-shadow:inset -5px 0 0 var(--orange)}
     </div>
     <div id="out-half" class="out"></div>
   </section>
+  </div>
+
+  <div id="view-market" role="tabpanel" aria-labelledby="tab-market" hidden>
+    <div class="note" id="mk-note" role="status" hidden style="margin-top:-24px"></div>
+    <div class="mk-filters" role="region" aria-label="סינון משרות">
+      <div class="fld" role="group" aria-labelledby="mkCoLbl"><span id="mkCoLbl">מתחרים</span><div class="seg" id="mkCo"></div></div>
+      <div class="fld" role="group" aria-labelledby="mkDeptLbl"><span id="mkDeptLbl">תחום</span><div class="seg" id="mkDept"></div></div>
+      <div class="factions"><button class="btn primary" id="mkExport" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6.5 10.5 12 16l5.5-5.5M4 20h16"/></svg>ייצוא לקובץ Excel</button></div>
+    </div>
+    <section class="sec" aria-labelledby="h-mk1">
+      <div class="sec-h"><div><h2 id="h-mk1">מי מגייס עכשיו?</h2><p class="sub" id="sub-mk1"></p></div></div>
+      <div id="out-mk1" class="out"></div>
+    </section>
+    <section class="sec" aria-labelledby="h-mk2">
+      <div class="sec-h"><div><h2 id="h-mk2">אצלם מול אצלנו</h2><p class="sub">משרות פתוחות אצל המתחרים בכל תחום, לצד מספר העובדים שקלטנו באותו תחום ב־6 החודשים האחרונים. התחום נקבע לפי שם המשרה.</p></div></div>
+      <div id="out-mk2" class="out"></div>
+    </section>
+    <section class="sec" aria-labelledby="h-mk3">
+      <div class="sec-h"><div><h2 id="h-mk3">מה מציעים ומה מבקשים?</h2><p class="sub">שכר חודשי ברוטו בשקלים, רק ממודעות שמציינות שכר. הדרישות נספרות מתוך טקסט המודעה.</p></div></div>
+      <div id="out-mk3" class="out"></div>
+    </section>
+    <section class="sec" aria-labelledby="h-mk4">
+      <div class="sec-h"><div><h2 id="h-mk4">כל המשרות</h2><p class="sub">מהחדשה לישנה, לפי הסינון שנבחר.</p></div></div>
+      <div id="out-mk4" class="out"></div>
+    </section>
+  </div>
 </div>
 <div id="tip" hidden role="tooltip"></div>
 
@@ -854,6 +939,7 @@ function renderAll(){
   eb.setAttribute('aria-disabled',String(dis));
   if(dis)eb.dataset.tip='אין נתונים לייצוא בתקופה שנבחרה';else delete eb.dataset.tip;
   renderJoin(F);renderOnb(F);renderProb(F);renderHalf(F);
+  if(!$("#view-market").hidden)renderMarket();
 }
 /* Per-browser memory (not shared with anyone, not sent anywhere): whatever this browser
    last loaded — a real file or the demo — reappears on the next visit, in THIS browser only.
@@ -940,7 +1026,167 @@ async function onAttFile(file){
    startEmpty() on any failure. Until then, "הצגת נתוני דוגמה" (demoBtn) uses the in-browser
    generator below (makeSample), which never touches the network. */
 
+/* ---------- market screen: competitor job postings (Apify) ---------- */
+const MK_CO=['נקסוס טכנולוגיות','אורביט סופטוור','קו שירות ישראל','פרימה מסחר','בלוטק מערכות'];
+/* [title, department, typical monthly gross NIS, weight] */
+const MK_ROLES=[['מפתח/ת Full Stack','פיתוח',27000,6],['מפתח/ת Backend','פיתוח',29000,5],['מהנדס/ת QA','פיתוח',22000,3],['מהנדס/ת DevOps','פיתוח',31000,3],['נציג/ת מכירות','מכירות',14000,5],['מנהל/ת לקוחות','מכירות',19000,3],['נציג/ת שירות','שירות לקוחות',11500,6],['ראש/ת צוות תמיכה','שירות לקוחות',17000,2],['מנהל/ת חשבונות','כספים',16000,3],['אנליסט/ית כספים','כספים',20000,2],['מנהל/ת קמפיינים','שיווק',17500,3],['מנהל/ת תוכן','שיווק',15000,2],['מתאם/ת תפעול','תפעול',13500,3],['מנהל/ת לוגיסטיקה','תפעול',18000,2],['מגייס/ת','משאבי אנוש',16500,2],['מנהל/ת שכר','משאבי אנוש',18500,1]];
+const MK_CITIES=['תל אביב','הרצליה','רמת גן','פתח תקווה','חיפה','ירושלים','באר שבע'];
+const MK_POOL={'פיתוח':['React','Node.js','Python','SQL','AWS'],'מכירות':['Salesforce','Excel','CRM'],'שירות לקוחות':['CRM','משמרות','אנגלית'],'כספים':['Excel','SAP','תואר ראשון'],'שיווק':['Excel','SQL','אנגלית'],'תפעול':['Excel','SAP','משמרות'],'משאבי אנוש':['Excel','תואר ראשון']};
+const MK_COMMON=['היברידי','עבודה מהבית','אנגלית','תואר ראשון','ניסיון של 3 שנים ומעלה'];
+const KW=[['היברידי',/היברידי|hybrid/i],['עבודה מהבית',/מהבית|remote/i],['אנגלית',/אנגלית|english/i],['תואר ראשון',/תואר ראשון|bachelor|b\.?sc/i],['ניסיון של 3 שנים ומעלה',/3\+? שנ|3\+? years/i],['משמרות',/משמרות|shift/i],['React',/react/i],['Node.js',/node/i],['Python',/python/i],['SQL',/\bsql\b/i],['AWS',/\baws\b/i],['Excel',/excel|אקסל/i],['Salesforce',/salesforce/i],['CRM',/\bcrm\b/i],['SAP',/\bsap\b/i]];
+const DEPT_RULES=[['כספים',/חשבונ|כספ|finance|accountant|bookkeep/i],['משאבי אנוש',/מגייס|שכר|\bhr\b|recruit|talent/i],['שיווק',/קמפיינ|שיווק|תוכן|marketing|content|seo/i],['שירות לקוחות',/שירות|תמיכה|support|customer (service|success)/i],['מכירות',/מכירות|לקוחות|sales|account (exec|manager)|business develop/i],['תפעול',/תפעול|לוגיסטיק|operations|logistic|supply/i],['פיתוח',/מפתח|מהנדס|developer|engineer|\bqa\b|devops|backend|full ?stack|frontend|software/i]];
+const deptOfTitle=t=>{const r=DEPT_RULES.find(x=>x[1].test(t||''));return r?r[0]:'אחר'};
+const M={jobs:[],meta:{},co:null,dept:null};
+const med=a=>{if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const nis=x=>'₪'+num(x);
+
+function normJobs(list){
+  return list.map((j,i)=>{
+    const a=Number(j.salaryMin)||null,b=Number(j.salaryMax)||null;
+    return{id:String(j.id!=null?j.id:i),title:String(j.title||'').trim()||'ללא שם משרה',company:String(j.company||'').trim()||'לא צוין',loc:String(j.location||'').trim(),t:parseDate(j.postedAt),
+      url:/^https?:\/\//i.test(j.url||'')?j.url:'',lo:a||b,hi:b||a,desc:String(j.description||''),dept:j.dept||deptOfTitle(j.title)};
+  });
+}
+function makeSampleData(){
+  const rnd=mulberry32(5102026),cw=[26,20,14,12,9],rw=MK_ROLES.map(r=>r[3]);
+  const pickW=w=>{let x=rnd()*w.reduce((s,y)=>s+y,0);for(let i=0;i<w.length;i++){x-=w[i];if(x<=0)return i}return w.length-1};
+  const pickN=(arr,n)=>{const a=arr.slice(),o=[];while(o.length<n&&a.length)o.push(a.splice(Math.floor(rnd()*a.length),1)[0]);return o};
+  const jobs=[];
+  for(let i=0;i<84;i++){
+    const co=MK_CO[pickW(cw)],r=MK_ROLES[pickW(rw)],age=Math.floor(Math.pow(rnd(),1.4)*45);
+    const kws=pickN(MK_POOL[r[1]],2+Math.floor(rnd()*2)).concat(pickN(MK_COMMON,1+Math.floor(rnd()*2)));
+    const j={id:'s'+i,title:r[0],company:co,location:MK_CITIES[Math.floor(rnd()*MK_CITIES.length)]+', ישראל',postedAt:isoOf(TODAY-age*DAY),url:'',description:'דרישות: '+kws.join(', ')+'.',salaryMin:null,salaryMax:null};
+    if(rnd()<.6){const lo=Math.round(r[2]*(.9+rnd()*.25)/500)*500;j.salaryMin=lo;j.salaryMax=Math.round(lo*(1.2+rnd()*.25)/500)*500}
+    jobs.push(j);
+  }
+  return{meta:{source:'sample',sample:true,fetchedAt:new Date(TODAY).toISOString()},jobs};
+}
+function setMarket(d){
+  M.meta=d.meta||{};M.jobs=normJobs(d.jobs);M.co=null;M.dept=null;
+  fillMarketFilters();
+  if(!$('#view-market').hidden)renderMarket();
+}
+async function loadJobsFile(){
+  try{
+    const r=await fetch('market-jobs.json',{cache:'no-store'});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(d&&Array.isArray(d.jobs)&&d.jobs.length)setMarket(d);
+  }catch(e){}
+}
+const mkJobs=()=>M.jobs.filter(j=>(!M.co||M.co.has(j.company))&&(!M.dept||j.dept===M.dept));
+const byNew=(a,b)=>(b.t==null?-1e15:b.t)-(a.t==null?-1e15:a.t);
+function fillMarketFilters(){
+  const cos=tallyBy(M.jobs,j=>j.company).map(x=>x[0]),ds=tallyBy(M.jobs,j=>j.dept).map(x=>x[0]).filter(d=>d!=='אחר').concat(M.jobs.some(j=>j.dept==='אחר')?['אחר']:[]);
+  $('#mkCo').innerHTML='<button type="button" data-mk-co="" aria-pressed="'+!M.co+'">כל המתחרים</button>'+cos.map(c=>'<button type="button" data-mk-co="'+esc(c)+'" aria-pressed="'+!!(M.co&&M.co.has(c))+'">'+esc(c)+'</button>').join('');
+  $('#mkDept').innerHTML='<button type="button" data-mk-dept="" aria-pressed="'+!M.dept+'">כל התחומים</button>'+ds.map(d=>'<button type="button" data-mk-dept="'+esc(d)+'" aria-pressed="'+(M.dept===d)+'">'+esc(d)+'</button>').join('');
+}
+function onMkClick(e){
+  const c=e.target.closest('[data-mk-co]'),d=e.target.closest('[data-mk-dept]');
+  if(c){
+    const v=c.dataset.mkCo;
+    if(!v)M.co=null;
+    else{const s=new Set(M.co||[]);if(s.has(v))s.delete(v);else s.add(v);M.co=s.size&&s.size<new Set(M.jobs.map(j=>j.company)).size?s:null}
+  }else if(d){M.dept=d.dataset.mkDept||null}
+  else return;
+  fillMarketFilters();renderMarket();
+}
+const ageText=t=>{if(t==null)return'—';const d=Math.round((TODAY-t)/DAY);return d<=0?'היום':d===1?'אתמול':'לפני '+d+' ימים'};
+const salText=j=>j.lo?(j.lo===j.hi?nis(j.lo):nis(j.lo)+'–'+nis(j.hi)):'לא צוין';
+function renderMarket(){
+  const J=mkJobs(),meta=M.meta,n=$('#mk-note');
+  n.hidden=false;
+  if(meta.sample){n.className='note warn';n.innerHTML='<span>מוצגים <b>נתוני דוגמה</b> מומצאים. שמות החברות והמשרות אינם אמיתיים. כדי לראות נתונים חיים מ־Apify, מריצים את הסקריפט tools/fetch-jobs.mjs ומעלים את dashboard/market-jobs.json ל־GitHub.</span>'}
+  else{n.className='note';n.innerHTML='<span>נתונים מ־Apify'+(meta.actor?' ('+esc(meta.actor)+')':'')+', נאספו ב־'+fmtDate(parseDate(meta.fetchedAt)||TODAY)+' · '+M.jobs.length+' משרות</span>'}
+  const eb=$('#mkExport');eb.setAttribute('aria-disabled',String(!J.length));
+  const none='<div class="panel"><div class="empty">אין משרות בסינון שנבחר. אפשר לבחור מתחרים או תחומים נוספים.</div></div>';
+  ['1','2','3','4'].forEach(k=>{if(!J.length)$('#out-mk'+k).innerHTML=none});
+  $('#sub-mk1').textContent='חברות לפי מספר המשרות הפתוחות. חדשות הן משרות שפורסמו ב־7 הימים האחרונים.';
+  if(!J.length)return;
+
+  /* section 1: who is hiring */
+  const age=j=>j.t==null?null:(TODAY-j.t)/DAY;
+  const new7=J.filter(j=>age(j)!=null&&age(j)<7).length,prev7=J.filter(j=>age(j)!=null&&age(j)>=7&&age(j)<14).length;
+  const dn=new7-prev7,cmp=dn===0?'כמו בשבוע שלפניו':(dn>0?'▲ '+dn+' יותר':'▼ '+(-dn)+' פחות')+' מהשבוע שלפניו';
+  const cos=tallyBy(J,j=>j.company),mxC=cos[0][1];
+  const sal=J.filter(j=>j.lo),medMid=med(sal.map(j=>(j.lo+j.hi)/2));
+  const rows=cos.map(([c,cnt])=>{
+    const nw=J.filter(j=>j.company===c&&age(j)!=null&&age(j)<7).length;
+    return'<div class="cmp-r"><span class="tl">'+esc(c)+'</span><div class="cmp-w" style="width:'+(cnt/mxC*100).toFixed(1)+'%">'+stack([{cls:'s-done',label:'חדשות ב־7 ימים',n:nw},{cls:'s-todo',label:'פורסמו קודם',n:cnt-nw}])+'</div><span class="tn">'+cnt+' משרות'+(nw?' · '+nw+' חדשות':'')+'</span></div>';
+  }).join('');
+  $('#out-mk1').innerHTML=
+   '<div class="kpis">'+
+    '<div class="kpi hero"><span class="l">משרות פתוחות אצל מתחרים</span><span class="v">'+J.length+'</span><span class="s">'+(M.co||M.dept?'לפי הסינון שנבחר':'בכל התחומים')+'</span></div>'+
+    '<div class="kpi"><span class="l">מתחרים שמגייסים</span><span class="v">'+cos.length+'</span><span class="s">'+esc(cos[0][0])+' מובילה עם '+mxC+'</span></div>'+
+    '<div class="kpi"><span class="l">משרות חדשות ב־7 ימים</span><span class="v">'+new7+'</span><span class="s">'+esc(cmp)+'</span></div>'+
+    '<div class="kpi"><span class="l">שכר חודשי חציוני</span><span class="v">'+(medMid==null?'—':nis(medMid))+'</span><span class="s">'+(sal.length?'מתוך '+sal.length+' משרות שמציינות שכר ('+pct(sal.length,J.length)+'%)':'אין משרות שמציינות שכר')+'</span></div>'+
+   '</div>'+
+   '<div class="panel"><div class="panel-h"><div><h3>משרות פתוחות לפי מתחרה</h3></div></div><div style="margin-bottom:8px">'+legend([['s-done','חדשות ב־7 ימים'],['s-todo','פורסמו קודם']])+'</div>'+rows+'</div>';
+
+  /* section 2: them vs us */
+  const known=J.filter(j=>j.dept!=='אחר'),other=J.length-known.length,since=addMonths(TODAY,-6);
+  const dl=tallyBy(known,j=>j.dept).map(([d,theirs])=>[d,theirs,state.emps.filter(r=>r.dept===d&&r.start>=since&&r.start<=TODAY).length]);
+  if(!dl.length)$('#out-mk2').innerHTML='<div class="panel"><div class="empty">אף משרה בסינון לא שויכה לאחד מתחומי החברה.</div></div>';
+  else{
+    const mx=Math.max.apply(null,dl.map(x=>Math.max(x[1],x[2])).concat([1])),w=v=>'calc((100% - 44px) * '+(v/mx).toFixed(3)+')';
+    const foot=[];
+    if(!state.emps.length)foot.push('אין כרגע נתוני עובדים טעונים, ולכן מספר הקליטות מוצג כאפס.');
+    else if(state.src.kind==='sample')foot.push('מספר הקליטות מבוסס על נתוני דוגמה של עובדים, כי אין חיבור ל־Airtable.');
+    if(other)foot.push(other+' משרות לא שויכו לתחום ולכן לא מוצגות כאן.');
+    $('#out-mk2').innerHTML='<div class="panel"><div class="panel-h"><div style="width:100%">'+legend([['s-prog','משרות פתוחות אצל מתחרים'],['s-done','עובדים שקלטנו ב־6 חודשים']])+'</div></div>'+
+     dl.map(x=>'<div class="pr"><span class="tl">'+esc(x[0])+'</span><div class="bars">'+
+      '<div class="pb them" data-tip="'+esc(x[0])+': '+x[1]+' משרות פתוחות אצל מתחרים"><i style="width:'+w(x[1])+'"></i><b>'+x[1]+'</b></div>'+
+      '<div class="pb us" data-tip="'+esc(x[0])+': '+x[2]+' עובדים נקלטו אצלנו"><i style="width:'+w(x[2])+'"></i><b>'+x[2]+'</b></div></div></div>').join('')+'</div>'+
+     (foot.length?'<p class="foot">'+esc(foot.join(' '))+'</p>':'');
+  }
+
+  /* section 3: salary ranges and requirements */
+  const groups=tallyBy(sal,j=>j.dept).map(([d])=>{const g=sal.filter(j=>j.dept===d);return{d,n:g.length,lo:med(g.map(j=>j.lo)),hi:med(g.map(j=>j.hi)),mid:med(g.map(j=>(j.lo+j.hi)/2))}}).sort((a,b)=>b.mid-a.mid);
+  let salHtml='<div class="empty">אין משרות שמציינות שכר בסינון שנבחר.</div>';
+  if(groups.length){
+    const top=Math.ceil(Math.max.apply(null,groups.map(g=>g.hi))/10000)*10000,L=v=>(v/top*100).toFixed(2);
+    salHtml=groups.map(g=>'<div class="rg-r"><span class="tl">'+esc(g.d)+'</span><div class="rg-t" data-tip="'+esc(g.d+': '+nis(g.lo)+' עד '+nis(g.hi)+', חציון '+nis(g.mid))+'"><div class="rg-b" style="left:'+L(g.lo)+'%;width:'+(L(g.hi)-L(g.lo)).toFixed(2)+'%"></div><div class="rg-m" style="left:'+L(g.mid)+'%"></div></div><span class="tn">'+nis(g.lo)+'–'+nis(g.hi)+'<small>'+g.n+' משרות'+(g.n<3?' · מעט נתונים':'')+'</small></span></div>').join('')+
+     '<div class="rg-ax"><div></div><div>'+[0,1,2,3,4].map(k=>'<span>'+(k===0?'0':nis(top*k/4))+'</span>').join('')+'</div><div></div></div>';
+  }
+  const kw=KW.map(([l,re])=>[l,J.filter(j=>re.test(j.title+' '+j.desc)).length]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  $('#out-mk3').innerHTML='<div class="grid2">'+
+   '<div class="panel"><div class="panel-h"><div><h3>שכר חודשי לפי תחום</h3><p class="hint">הפס הוא טווח השכר החציוני, והסמן הוא אמצע הטווח.</p></div></div>'+salHtml+'</div>'+
+   '<div class="panel"><div class="panel-h"><div><h3>מה מבקשים במודעות</h3><p class="hint">מספר המשרות שמזכירות כל דרישה, ואחוז מהמשרות בסינון.</p></div></div>'+
+   (kw.length?'<div class="kw">'+kw.map(x=>'<span>'+esc(x[0])+'<b>'+x[1]+'</b><small>'+pct(x[1],J.length)+'%</small></span>').join('')+'</div>':'<div class="empty">לא זוהו דרישות בטקסט המודעות.</div>')+'</div></div>';
+
+  /* section 4: table */
+  const sorted=J.slice().sort(byNew);
+  $('#out-mk4').innerHTML='<div class="panel"><div class="panel-h"><div><h3>'+J.length+' משרות</h3></div></div><div class="tbl'+(J.length>8?' tall':'')+'"><table><thead><tr><th class="nm">משרה</th><th>מתחרה</th><th>מיקום</th><th>פורסמה</th><th>שכר חודשי</th><th class="c">מודעה</th></tr></thead><tbody>'+
+   sorted.map(j=>'<tr><td class="nm">'+esc(j.title)+'<span class="mut">'+esc(j.dept)+'</span></td><td>'+esc(j.company)+'</td><td>'+esc(j.loc||'—')+'</td><td>'+(j.t==null?'—':fmtDate(j.t))+'<span class="mut">'+ageText(j.t)+'</span></td><td>'+(j.lo?esc(salText(j)):'<span class="ok-t">לא צוין</span>')+'</td><td class="c">'+(j.url?'<a class="lnk" href="'+esc(j.url)+'" target="_blank" rel="noopener">למודעה</a>':'—')+'</td></tr>').join('')+'</tbody></table></div></div>';
+}
+async function exportMarket(){
+  const J=mkJobs().sort(byNew);if(!J.length)return;
+  const head=['משרה','תחום','מתחרה','מיקום','תאריך פרסום','שכר מינימום','שכר מקסימום','קישור'],rows=J.map(j=>[j.title,j.dept,j.company,j.loc,j.t==null?'':fmtDate(j.t),j.lo||'',j.hi||'',j.url]),stamp=isoOf(TODAY);
+  try{
+    if(window.XLSX){
+      const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([head].concat(rows));ws['!cols']=head.map(()=>({wch:20}));
+      XLSX.utils.book_append_sheet(wb,ws,'משרות מתחרים');wb.Workbook={Views:[{RTL:true}]};
+      await saveFile('משרות-מתחרים-'+stamp+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    }else{
+      const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+      await saveFile('משרות-מתחרים-'+stamp+'.csv',new Blob(['﻿'+[head].concat(rows).map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));
+    }
+  }catch(e){const n=$('#mk-note');n.className='note warn';n.innerHTML='<span>הייצוא לא הושלם: '+esc(e&&e.message||'שגיאה לא ידועה')+'</span>';n.hidden=false}
+}
+function setView(v){
+  const mk=v==='market';
+  $('#view-onb').hidden=mk;$('#view-market').hidden=!mk;
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===v)));
+  $('h1').textContent=mk?'שוק העבודה והמתחרים':'קליטת עובדים';
+  $('#asof').hidden=mk;document.querySelector('.tools').hidden=mk;
+  if(mk)renderMarket();
+  try{history.replaceState(null,'',mk?'#market':location.pathname+location.search)}catch(e){}
+}
+
 /* ---------- events ---------- */
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)setView(b.dataset.view)});
+$('#view-market').addEventListener('click',onMkClick);
+$('#mkExport').addEventListener('click',()=>{if($('#mkExport').getAttribute('aria-disabled')!=='true')exportMarket()});
 $('#empBtn').addEventListener('click',()=>$('#empIn').click());
 $('#attBtn').addEventListener('click',()=>$('#attIn').click());
 $('#empIn').addEventListener('change',e=>{onEmpFile(e.target.files[0]);e.target.value=''});
@@ -993,5 +1239,7 @@ if(!loadPersisted())startEmpty();
 {const rg=presetRange('month');state.from=rg[0];state.to=rg[1];}
 syncFilters();
 renderAll();
+setMarket(makeSampleData());loadJobsFile();
+if(location.hash==='#market')setView('market');
 })();
 </script>
