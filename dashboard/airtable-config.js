@@ -4,5 +4,5 @@
 window.AIRTABLE_CONFIG = {
   baseId: 'apphvloFwyopeXu51',
   tableId: 'tblOd7xx8DQcj1LD2',
-  token: ''
+  token: 'github.com/spbila2/hr-onboarding-dashboard/blob/main/dashboard/airtable-config.js'
 };
