@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="airtable-config.js"></script>
 <style>
 :root{
   --page:#f3f5f8; --surface:#ffffff; --ink:#14202e; --ink2:#465567; --muted:#56616e;
@@ -291,6 +292,7 @@ a.lnk{color:var(--blue);font-weight:700;text-decoration:underline;text-underline
       <p class="asof" id="asof"></p>
     </div>
     <div class="tools">
+      <button class="btn secondary" id="refreshBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span>רענון מ־Airtable</span></button>
       <button class="btn primary" id="empBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6.5 9.5 12 4l5.5 5.5M4 20h16"/></svg>טעינת קובץ עובדים</button>
       <button class="btn secondary" id="attBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6.5 9.5 12 4l5.5 5.5M4 20h16"/></svg>טעינת קובץ נוכחות</button>
       <button class="btn tertiary" id="demoBtn" type="button">הצגת נתוני דוגמה</button>
@@ -1200,7 +1202,48 @@ function setView(v){
   try{history.replaceState(null,'',mk?'#market':location.pathname+location.search)}catch(e){}
 }
 
+/* ---------- live data from Airtable (REST API, read-only token from airtable-config.js) ---------- */
+const AT_COLS=['מספר זהות','שם','מחלקה','תפקיד','תאריך פתיחת משרה','תאריך תחילת עבודה','חוזה','טופס 101','הדרכות','ציוד','הרשאות','תאריך עזיבה'];
+let atBusy=false;
+const atCell=v=>v==null?'':Array.isArray(v)?v.map(atCell).join(', '):typeof v==='object'?(v.name!=null?v.name:''):v;
+async function fetchAirtable(cfg){
+  const rows=[];let offset='';
+  do{
+    const qs=new URLSearchParams({pageSize:'100'});AT_COLS.forEach(c=>qs.append('fields[]',c));if(offset)qs.set('offset',offset);
+    const res=await fetch('https://api.airtable.com/v0/'+cfg.baseId+'/'+cfg.tableId+'?'+qs,{headers:{Authorization:'Bearer '+cfg.token}});
+    if(!res.ok){const e=new Error('airtable '+res.status);e.status=res.status;throw e}
+    const p=await res.json();
+    p.records.forEach(r=>rows.push(AT_COLS.map(c=>atCell(r.fields[c]))));
+    offset=p.offset||'';
+  }while(offset);
+  return[AT_COLS].concat(rows);
+}
+async function loadFromAirtable(){
+  const cfg=window.AIRTABLE_CONFIG;if(!cfg||!cfg.token||atBusy)return;
+  atBusy=true;const btn=$('#refreshBtn');btn.setAttribute('aria-disabled','true');btn.querySelector('span').textContent='טוען…';
+  try{
+    const res=parseEmployees(await fetchAirtable(cfg));
+    const keepAtt=state.attSrc&&state.attSrc.kind!=='sample',depts=state.depts,first=state.src.kind!=='airtable',now=new Date();
+    loadData(res.rows,res.tasks,keepAtt?state.att:null,{kind:'airtable',name:'Airtable (מתעדכן אוטומטית)',updated:TODAY,time:pad2(now.getHours())+':'+pad2(now.getMinutes())},keepAtt?state.attSrc:null);
+    if(depts){const all=new Set(state.emps.map(r=>r.dept)),k=[...depts].filter(d=>all.has(d));state.depts=k.length?new Set(k):null;fillDepts()}
+    if(first){state.preset='month';let rg=presetRange('month');state.from=rg[0];state.to=rg[1];if(!state.emps.some(inRange)){state.preset='all';rg=presetRange('all');state.from=rg[0];state.to=rg[1]}}
+    else if(state.preset){const rg=presetRange(state.preset);state.from=rg[0];state.to=rg[1]}
+    setNote('<span>הנתונים נקראים ישירות מטבלה ב־<b>Airtable</b> ומתעדכנים כל דקה. נטענו '+res.rows.length+' עובדים.</span>');
+    syncFilters();renderAll();
+  }catch(e){
+    setNote('<span>'+(e.status===401||e.status===403?'ה־token של Airtable לא תקין או שאין לו הרשאה לטבלה.':e.status===422?'שם עמודה בטבלה ב־Airtable לא תואם למה שהדאשבורד מצפה לו.':e.status===404?'הטבלה לא נמצאה ב־Airtable.':'החיבור ל־Airtable נכשל. ננסה שוב בעוד דקה.')+'</span>','warn');
+  }
+  atBusy=false;btn.setAttribute('aria-disabled','false');btn.querySelector('span').textContent='רענון מ־Airtable';
+}
+function startAirtable(){
+  const cfg=window.AIRTABLE_CONFIG;
+  if(!cfg||!cfg.token)return;
+  $('#refreshBtn').hidden=false;
+  loadFromAirtable();setInterval(loadFromAirtable,60000);
+}
+
 /* ---------- events ---------- */
+$('#refreshBtn').addEventListener('click',loadFromAirtable);
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)setView(b.dataset.view)});
 $('#view-market').addEventListener('click',onMkClick);
 $('#mkExport').addEventListener('click',()=>{if($('#mkExport').getAttribute('aria-disabled')!=='true')exportMarket()});
@@ -1256,7 +1299,7 @@ if(!loadPersisted())startEmpty();
 {const rg=presetRange('month');state.from=rg[0];state.to=rg[1];}
 syncFilters();
 renderAll();
-setMarket(makeSampleData());loadJobsFile();loadHires();
+setMarket(makeSampleData());loadJobsFile();loadHires();startAirtable();
 if(location.hash==='#market')setView('market');
 })();
 </script>
