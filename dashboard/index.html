@@ -1036,7 +1036,7 @@ const MK_COMMON=['היברידי','עבודה מהבית','אנגלית','תוא
 const KW=[['היברידי',/היברידי|hybrid/i],['עבודה מהבית',/מהבית|remote/i],['אנגלית',/אנגלית|english/i],['תואר ראשון',/תואר ראשון|bachelor|b\.?sc/i],['ניסיון של 3 שנים ומעלה',/3\+? שנ|3\+? years/i],['משמרות',/משמרות|shift/i],['React',/react/i],['Node.js',/node/i],['Python',/python/i],['SQL',/\bsql\b/i],['AWS',/\baws\b/i],['Excel',/excel|אקסל/i],['Salesforce',/salesforce/i],['CRM',/\bcrm\b/i],['SAP',/\bsap\b/i]];
 const DEPT_RULES=[['כספים',/חשבונ|כספ|finance|accountant|bookkeep/i],['משאבי אנוש',/מגייס|שכר|\bhr\b|recruit|talent/i],['שיווק',/קמפיינ|שיווק|תוכן|marketing|content|seo/i],['שירות לקוחות',/שירות|תמיכה|support|customer (service|success)/i],['מכירות',/מכירות|לקוחות|sales|account (exec|manager)|business develop/i],['תפעול',/תפעול|לוגיסטיק|operations|logistic|supply/i],['פיתוח',/מפתח|מהנדס|developer|engineer|\bqa\b|devops|backend|full ?stack|frontend|software/i]];
 const deptOfTitle=t=>{const r=DEPT_RULES.find(x=>x[1].test(t||''));return r?r[0]:'אחר'};
-const M={jobs:[],meta:{},co:null,dept:null};
+const M={jobs:[],meta:{},co:null,dept:null,hires:null};
 const med=a=>{if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
 const nis=x=>'₪'+num(x);
 
@@ -1073,6 +1073,23 @@ async function loadJobsFile(){
     const d=await r.json();
     if(d&&Array.isArray(d.jobs)&&d.jobs.length)setMarket(d);
   }catch(e){}
+}
+/* our hires for the "them vs us" panel: only department and start date, from dashboard/data/hires.json (no names, no ID numbers) */
+async function loadHires(){
+  try{
+    const r=await fetch('data/hires.json',{cache:'no-store'});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!d||!Array.isArray(d.hires)||!d.hires.length)return;
+    M.hires={list:d.hires.map(h=>({dept:String(h.dept||'').trim(),start:parseDate(h.start)})).filter(h=>h.start!=null),updated:parseDate(d.meta&&d.meta.updatedAt)};
+    if(!$('#view-market').hidden)renderMarket();
+  }catch(e){}
+}
+function hiresSource(){
+  if(state.src.kind==='file')return{list:state.emps,note:''};
+  if(M.hires)return{list:M.hires.list,note:'מספר הקליטות מבוסס על ייצוא מ־Airtable'+(M.hires.updated?' מ־'+fmtDate(M.hires.updated):'')+', בלי שמות ומספרי זהות.'};
+  if(!state.emps.length)return{list:[],note:'אין כרגע נתוני עובדים טעונים, ולכן מספר הקליטות מוצג כאפס.'};
+  return{list:state.emps,note:state.src.kind==='sample'?'מספר הקליטות מבוסס על נתוני דוגמה של עובדים.':''};
 }
 const mkJobs=()=>M.jobs.filter(j=>(!M.co||M.co.has(j.company))&&(!M.dept||j.dept===M.dept));
 const byNew=(a,b)=>(b.t==null?-1e15:b.t)-(a.t==null?-1e15:a.t);
@@ -1125,13 +1142,13 @@ function renderMarket(){
 
   /* section 2: them vs us */
   const known=J.filter(j=>j.dept!=='אחר'),other=J.length-known.length,since=addMonths(TODAY,-6);
-  const dl=tallyBy(known,j=>j.dept).map(([d,theirs])=>[d,theirs,state.emps.filter(r=>r.dept===d&&r.start>=since&&r.start<=TODAY).length]);
+  const H=hiresSource();
+  const dl=tallyBy(known,j=>j.dept).map(([d,theirs])=>[d,theirs,H.list.filter(r=>r.dept===d&&r.start>=since&&r.start<=TODAY).length]);
   if(!dl.length)$('#out-mk2').innerHTML='<div class="panel"><div class="empty">אף משרה בסינון לא שויכה לאחד מתחומי החברה.</div></div>';
   else{
     const mx=Math.max.apply(null,dl.map(x=>Math.max(x[1],x[2])).concat([1])),w=v=>'calc((100% - 44px) * '+(v/mx).toFixed(3)+')';
     const foot=[];
-    if(!state.emps.length)foot.push('אין כרגע נתוני עובדים טעונים, ולכן מספר הקליטות מוצג כאפס.');
-    else if(state.src.kind==='sample')foot.push('מספר הקליטות מבוסס על נתוני דוגמה של עובדים, כי אין חיבור ל־Airtable.');
+    if(H.note)foot.push(H.note);
     if(other)foot.push(other+' משרות לא שויכו לתחום ולכן לא מוצגות כאן.');
     $('#out-mk2').innerHTML='<div class="panel"><div class="panel-h"><div style="width:100%">'+legend([['s-prog','משרות פתוחות אצל מתחרים'],['s-done','עובדים שקלטנו ב־6 חודשים']])+'</div></div>'+
      dl.map(x=>'<div class="pr"><span class="tl">'+esc(x[0])+'</span><div class="bars">'+
@@ -1239,7 +1256,7 @@ if(!loadPersisted())startEmpty();
 {const rg=presetRange('month');state.from=rg[0];state.to=rg[1];}
 syncFilters();
 renderAll();
-setMarket(makeSampleData());loadJobsFile();
+setMarket(makeSampleData());loadJobsFile();loadHires();
 if(location.hash==='#market')setView('market');
 })();
 </script>
